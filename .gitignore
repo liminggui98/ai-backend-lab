@@ -1,0 +1,6 @@
+.env
+day1-starter/pgdata/
+*.class
+.idea/
+*.log
+.DS_Store
