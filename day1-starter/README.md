@@ -38,22 +38,22 @@ RAG 是先把相关资料检索出来、再交给大模型生成答案的技术�
 
 同一份代码，只改环境变量：
 
-| provider | LLM_BASE_URL | LLM_MODEL | Key |
-|---|---|---|---|
-| DeepSeek | `https://api.deepseek.com` | `deepseek-chat` | `sk-`（平台自建） |
-| 智谱 | `https://open.bigmodel.cn/api/paas/v4` | `glm-4-flash` | `sk-`（免费额度） |
-| 百炼（专属空间） | `https://ws-xxx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | 以控制台为准 | `sk-ws-`（绑定空间） |
+| provider | LLM_BASE_URL                                                     | LLM_MODEL       | Key            |
+| -------- | ---------------------------------------------------------------- | --------------- | -------------- |
+| DeepSeek | `https://api.deepseek.com`                                       | `deepseek-chat` | `sk-`（平台自建）    |
+| 智谱       | `https://open.bigmodel.cn/api/paas/v4`                           | `glm-4-flash`   | `sk-`（免费额度）    |
+| 百炼（专属空间） | `https://ws-xxx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | 以控制台为准          | `sk-ws-`（绑定空间） |
 
 > 百炼的 DashScope 公共域名（`dashscope.aliyuncs.com`）自 2026-09-30 起进入维护期，新业务走专属空间域名。
 > 空间级 key 必须配空间级域名，混用会返回 `403 AccessDenied.Unpurchased`。
 
 三家都跑通后，把首 token 延迟填进下面这张表——这是 W1 参数实验的基线。
 
-| provider | 模型 | 首 token | 总耗时 |
-|---|---|---|---|
-| DeepSeek | deepseek-chat | | |
-| 智谱 | glm-4-flash | | |
-| 百炼 | | | |
+| provider | 模型            | 首 token | 总耗时    |
+| -------- | ------------- | ------- | ------ |
+| DeepSeek | deepseek-chat | 412 ms  | 1.33 s |
+| 智谱       | glm-4-flash   | 926 ms  | 1.54 s |
+| 百炼       | qwen3.7-plus  | 839 ms  | 4.02 s |
 
 三家跑完，把首 token 延迟和总耗时记下来——这就是 W1 参数实验的第一组数据。
 
