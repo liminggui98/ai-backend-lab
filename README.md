@@ -21,6 +21,7 @@
 
 ```
 day1-starter/      环境验证：pgvector 容器 + 零依赖的 SSE 流式调用
+day2-starter/      JD 词频分析：31 份 JD → 23 词频表 + 27 个岗位口径
 ```
 
 ## 技术栈
