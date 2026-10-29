@@ -82,11 +82,12 @@ public class HelloLLM {
 
             Matcher m = content.matcher(data);
             while (m.find()) {
+                String piece = unescape(m.group(1));
+                if (piece.isEmpty()) continue;   // 首帧只带 role、content 为空，不能算首 token
                 if (firstToken) {
                     System.out.printf("首 token 延迟：%.0f ms%n%n", (System.nanoTime() - start) / 1_000_000.0);
                     firstToken = false;
                 }
-                String piece = unescape(m.group(1));
                 answer.append(piece);
                 System.out.print(piece);
             }

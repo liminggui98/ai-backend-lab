@@ -4,3 +4,4 @@ day1-starter/pgdata/
 .idea/
 *.log
 .DS_Store
+/ai-backend-lab.iml
