@@ -5,3 +5,4 @@ day1-starter/pgdata/
 *.log
 .DS_Store
 /ai-backend-lab.iml
+/out/
