@@ -1,5 +1,7 @@
 # Day 5 · 11/02 周一 · Java 21：新语法与边界
 
+> **状态：已完成**（实际执行 2026-10-30，比计划提前 3 天）　·　实现：[Day5Starter.java](Day5Starter.java)（284 行）　·　提交：`f572595`
+>
 > W1 第 1 天。今天不碰 AI，只把语言手感找回来。重点不是「会写」，而是**知道每个新语法解决什么问题、什么时候不该用**。
 > 本周卡片：[W1.md](../W1.md)　·　下一日：[day6](../day6-starter/)
 >
@@ -12,6 +14,8 @@
 | 上午 09:00–12:00 | 读下面 5 组概念；JDK 21 环境与 Maven 指向同一个 JDK | 能解释 record / sealed / 模式匹配各自解决什么问题 |
 | 下午 13:30–17:30 | 自己写四段小练习；用 Java 21 重写一段旧代码 | 重写版行为不变、行数下降、没有 Lombok |
 | 晚上 19:00–21:30 | 读 Boot 3 参考指南「Auto-configuration」 | 能口述自动配置的加载链路（明天用） |
+
+> 实际执行：13:31–17:07 只做了「四段小练习」这一段（3.5 h）。**「重写旧代码」没做**，挪到 Day 6 上午；「读 Boot 3 自动配置」放在今晚。
 
 ## 名词表
 
@@ -105,16 +109,16 @@
 
 验收：
 
-- [ ] 四段练习能跑，每段都能说出「不用新语法会多写什么」
-- [ ] 重写版行为不变（原文件的自检仍通过），行数下降，没有 Lombok
-- [ ] 能举一个「record 不合适」的真实场景，并说清原因
-- [ ] JDK 与 Maven 指向同一个 21（`java -version` 与 `mvn -v` 一致）
+- [x] 四段练习能跑，每段都能说出「不用新语法会多写什么」
+- [ ] 重写版行为不变（原文件的自检仍通过），行数下降，没有 Lombok —— **未做**，挪到 Day 6 上午
+- [ ] 能举一个「record 不合适」的真实场景，并说清原因 —— 素材已备好（见文末），还没落纸
+- [x] JDK 与 Maven 指向同一个 21（`java -version` 与 `mvn -v` 一致）：都是 21.0.13
 
 ## 完成标志
 
-- [ ] 名词表里每个词都能用自己的话解释，不背原文
-- [ ] 能画出「sealed + switch 穷尽性」在重构时如何帮你抓漏
-- [ ] 当天代码已提交（commit message 写「做了什么」，不写 update）
+- [x] 名词表里每个词都能用自己的话解释，不背原文（`record pattern` / `when` 已能配本项目例子）
+- [x] 能画出「sealed + switch 穷尽性」在重构时如何帮你抓漏（加第 5 态实测，两处 switch 同时报错）
+- [x] 当天代码已提交（commit message 写「做了什么」，不写 update）—— `f572595`
 
 ## 今天不做
 
@@ -125,6 +129,72 @@
 
 ## 记录（当天填）
 
-- 实际用时：上午 __ h / 下午 __ h / 晚上 __ h
+- 实际用时：上午 **0 h** / 下午 **3.5 h**（13:31 – 17:07，中间两次长时间停顿）/ 晚上 **0 h**
 - 卡点（卡了多久、试了什么、怎么过的）：
-- 一句话结论：
+  1. **把 sealed 当成「枚举的花哨写法」**（约 2 h 白跑）：`Day / Monday / Tuesday` 造了 8 个空 record，各情况没有数据差异 → record pattern 无处解构、`when` 无处挂、紧凑构造器只能写重言式 `"周一".equals(name)`。换掉判据才走通：**先问「各情况的数据是否不同」，不同才用 sealed；只差常量就该用 enum。**
+  2. **`default -> "无建议"` 把穷尽性关掉了**（约 20 min 反复）：加第 5 态时只有 `httpStatus` 报错，`advice` 静默通过。删掉 `default` 后，编译器的报错反而成了设计提示——它逐条告诉你「哪些状态还没写分支」。
+  3. **校验放晚了**（15 min）：没有紧凑构造器时 `new Ok(null, ...)` 能构造成功，直到 `content()` 里 `Optional.of(null)` 才 NPE，错误从构造期漂到调用期。补上「非空 + 非空白 + trim」后，5 条非法构造全部在入口被拒。
+- 一句话结论：**新语法的价值不在「少写几行」，而在「让编译器替你看住不变量（record）和穷尽性（sealed + switch）」；record 只有存在不变量时才值得用。**
+
+## 当天产出
+
+| 产出 | 位置 | 状态 |
+| --- | --- | --- |
+| 四段练习（四态 `LlmResult`） | `Day5Starter.java`，284 行 | ✅ 可运行，`-Xlint:all` 零告警 |
+| 边界实验（加第 5 态 → 编译失败） | 同上；另有 `日常/jdk21-sealed-switch/` 的 WeekDemo + 3 个 compile-fail | ✅ 两处 switch 同时报错 |
+| 重写旧代码（Java 21 版） | — | ❌ 未做，挪到 Day 6 |
+
+四段练习的落点：
+
+| 练习 | 落在哪 | 关键写法 |
+| --- | --- | --- |
+| record + 紧凑构造器 | `Ok` / `RateLimited` / `TimedOut` / `Broken` / `Usage` | 各守一条不变量：文本非空白并 trim、`retryAfter ≥ 0`、`attempts ∈ [0,3]`、`status ∈ [400,599]`、token 非负 |
+| sealed + 穷尽 switch | `httpStatus`、`advice` | 两处都无 `default`，`permits` 四态 |
+| 模式匹配 | `advice` | 嵌套解构 `Ok(var ignored, Usage(var p, var c), var ms)` + 4 个 `when` 守卫 + `case Broken b` |
+| 文本块 | `retryPrompt` | `"""` + `%s` + `formatted` + `stripTrailing()` |
+
+## 实测数据
+
+八个样本（每种状态两条，覆盖守卫两档）：
+
+```text
+0 Ok           http=200 retry=false success=true  调用成功，无需建议
+1 Ok           http=200 retry=false success=true  首 token 5000ms 过慢（输入 100 / 输出 20 tok）
+2 RateLimited  http=429 retry=true  success=false 限流太久（zhipu 要求等 30s），建议降级到备用模型
+3 RateLimited  http=429 retry=true  success=false 等待 3s 后重试（deepseek）
+4 TimedOut     http=504 retry=true  success=false 超时 20s，可再试一次
+5 TimedOut     http=504 retry=false success=false 已超时 3 次，放弃重试（累计等待 20s）
+6 Broken       http=503 retry=true  success=false 服务方 503，走退避重试
+7 Broken       http=401 retry=false success=false 服务方 401，不可重试：invalid key
+```
+
+不变量（5 条非法构造全部被拒）：
+
+```text
+✓ Ok("   ") 被拒绝：text 不能为空
+✓ Ok(null) 被拒绝：text 不能为空
+✓ TimedOut(attempts=99) 被拒绝：attempts 必须在 0..3：99
+✓ Broken(status=200) 被拒绝：status 必须在 400..599：200
+✓ RateLimited(provider="") 被拒绝：provider 必填
+```
+
+边界实验：给 `permits` 加第 5 态 `Cached` 后
+
+```text
+Day5Starter.java:57: 错误: switch 表达式不包含所有可能的输入值
+Day5Starter.java:73: 错误: switch 表达式不包含所有可能的输入值
+```
+
+环境：`java 21.0.13 (Temurin)`、`mvn 3.10.0`，`mvn -v` 报告的 Java 也是 21.0.13。
+
+## 「record 不合适」的三条素材（还没落纸）
+
+1. **JPA 实体**：需要无参构造 + 可变的非 final 字段，record 天生给不了。
+2. **数值语义会丢**：`record JsonNum(double)` 把 `1024` 变成 `1024.0` —— day3 的 JSON 解析器特意分了 `Integer / Long / Double` 三档，换成单组件 record 就丢了。
+3. **不可变只到引用层**：`record JsonArr(List<JsonValue> items)` 挡不住外部改 list，必须 `List.copyOf(items)` 才真不可变 —— record 只保证「引用不变」，不保证「内容不变」。
+
+## 明天（Day 6）先做这三件
+
+1. 补「重写旧代码」：把 `day3-starter/LLMClient.java` 里 `asMap / num / str` 那串 `instanceof` 改成 `sealed JsonValue` + 模式 switch，用 `java LLMClient.java --selftest` 验行为不变（约 30 min）。
+2. 把 `日常/jdk21-sealed-switch/`（WeekDemo + 3 个 compile-fail）挪进仓库，别留在工作空间外面。
+3. 上面三条「record 不合适」抄进笔记，W7 面试前要能直接讲。

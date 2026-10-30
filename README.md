@@ -7,8 +7,8 @@
 
 | 周   | 主题                                  | 交付                          | 状态  |
 | --- | ----------------------------------- | --------------------------- | --- |
-| W0  | 环境、模型接入、选型                          | pgvector + 三家 provider 流式调用 | 🚧   |
-| W1  | Java 21 + Spring Boot 3 + Spring AI | 可切换 provider 的流式服务          | ⬜   |
+| W0  | 环境、模型接入、选型                          | pgvector + 三家 provider 流式调用 | ✅   |
+| W1  | Java 21 + Spring Boot 3 + Spring AI | 可切换 provider 的流式服务          | 🚧   |
 | W2  | Prompt / Tool Calling / Memory      | 项目 0：AI 助手                  | ⬜   |
 | W3  | RAG 上：Tika / 切分 / PgVector          | ingest 管道 + 检索接口            | ⬜   |
 | W4  | RAG 下：混合检索 / Rerank / 评测            | 项目一：企业知识库                   | ⬜   |
@@ -22,7 +22,26 @@
 ```
 day1-starter/      环境验证：pgvector 容器 + 零依赖的 SSE 流式调用
 day2-starter/      JD 词频分析：31 份 JD → 23 词频表 + 27 个岗位口径
+day3-starter/      三家 API 对比 + 多 provider 统一客户端
+W1.md              W1 周卡片：硬验收、交付物、七天索引
+day5-starter/      Java 21：record / sealed / 模式匹配 / 文本块
+day6-starter/      并发：线程池 / CompletableFuture / 虚拟线程
+day7-starter/      Spring Boot 3：迁移主线、配置绑定、3 个 REST 接口
+day8-starter/      Spring AI：ChatModel / ChatClient / 多 provider
+day9-starter/      SSE 流式：协议、断开释放、首 token
+day10-starter/     输出日：两篇笔记 + 5 分钟录屏 + 5 道题
+day11-starter/     W1 复盘
+W2.md              W2 周卡片：硬验收、交付物、七天索引
+day12-starter/     Prompt 五段式、few-shot、防注入
+day13-starter/     Tool Calling：报文往返、工具设计、错误回传
+day14-starter/     ChatMemory 与 Advisor：裁剪策略、限流、日志
+day15-starter/     项目 0：组装、上线、兜底矩阵
+day16-starter/     打磨 + 3 分钟录屏 + Python 语法速览
+day17-starter/     LangChain 与 RAG 示例（只读）
+day18-starter/     W2 复盘
 ```
+
+> `day5`–`day18` 目录里是**学习卡与概念总结**（学什么、名词、坑、验收），实现代码当天自己写进去。
 
 ## 技术栈
 
