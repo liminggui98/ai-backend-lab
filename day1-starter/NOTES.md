@@ -115,11 +115,21 @@
 | 9 | 🟡 | 是 BPE tokenizer 对中文切分更碎（1 个汉字常 1–2 token），不是「存储方式」；英文常见词多是一个 token |
 | 10 | ❌ | 默认**报 400**（context length exceeded），不会自动截断；框架可能替你裁剪历史。「输出被截断」是 `finish_reason=length`，两回事 |
 
-### W1 用代码验证这 3 条
 
-- **3**：非流式调用后打印 `choices[0].message.content`，确认路径。
-- **4**：把 `max_tokens` 调到 5，跑一句长回答，观察 `finish_reason=length`。
-- **5**：同一句请求对比 `prompt_tokens` / `completion_tokens` / `total_tokens`，按单价算一次成本。
+### 2026-10-30 用 HelloLLM 非流式验证（#3 / #4 / #5）
+
+- **#3 路径**：非流式答案只在 `choices[0].message.content`，没有 `delta`；`finish_reason=stop`。
+- **#4 截断**：`max_tokens=5` → HTTP 200 + `finish_reason=length` + `content="RAG（检索增强"`（半句），`completion_tokens=5`。
+  与「上下文超限」的区别：后者是 **400 报错**，前者是**正常返回被截断**。
+- **#5 计费**：`prompt=22 / completion=40 / total=62`，`prompt_cache_hit_tokens=0`。
+  高峰 `(22×2 + 40×8)/1e6 = ¥0.000364`，千次 ¥0.364；空闲 ¥0.000182。
+  输出占这次费用的 **88%**（320/364）。
+
+**两个新发现**：
+1. 同一 prompt 连跑两次 `cached_tokens` 都是 0 —— 缓存按 64 token 一块对齐，22 token 未达粒度。
+   → 修正 Day 3 结论：前缀要**够长（≥64 token）**才进缓存，不是「固定前缀就一定命中」。
+2. 用正则 `[^}]*` 抠 usage 会在 `prompt_tokens_details` 的内层 `}` 处截断 ——
+   改用括号配平的 `jsonObjectAfter()`。这是 Day 3 `LLMClient` 要写真正解析器的原因。
 
 ### 一句话记住
 
