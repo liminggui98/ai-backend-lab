@@ -26,7 +26,7 @@
 
 跟读顺序建议：**TL;DR → E（结论）→ A（为什么）→ C（实测依据）**。B / D 是 W2、W6 才会用到的参考表。
 
-> **待办 2 项**：B 表 2 项实测（百炼 json_schema、DeepSeek 并行工具）、C 表补一组长回答对比（短回答看不出 2.7 倍生成速度差）。
+> **待办 2 项**：B 表 1 项实测（DeepSeek 并行工具，见 B2b）、C 表补一组长回答对比（短回答看不出 2.7 倍生成速度差）。百炼 `json_schema` 已于 2026-10-30 实测完成（见 B2）。
 
 ---
 
@@ -166,7 +166,7 @@ DeepSeek-Flash   https://api-docs.deepseek.com/zh-cn/quick_start/pricing
 | 流式（SSE） | ✅ | ✅ | ✅ | 三家本机实测（C 表） |
 | 推理过程单独返回（`reasoning_content`） | ✅ 实测 | 待验证 | ✅ 实测 | DeepSeek 见「思考模式」；百炼 Day 1 实测先流 reasoning 再流 content |
 | `response_format: json_object` | ✅ | ✅ | ✅ | 只保证是合法 JSON，**不保证字段**；三家都要求 prompt 里出现 json 字样 |
-| `response_format: json_schema`（严格模式） | ❌ | ❌ | ✅ | DeepSeek API 参考里**没有这个字段**；智谱文档只给 `json_object`；百炼明确支持，但**支持的模型不同**，用前查模型页 |
+| `response_format: json_schema`（严格模式） | ❌ | ❌ | ✅ **实测：约束生效，`maxLength` 例外** | DeepSeek API 参考里**没有这个字段**；智谱只给 `json_object`；百炼（`qwen3.7-plus`）实测见 B2 —— **字段/枚举白名单是真强制，长度不强制** |
 | 工具调用（`tools`） | ✅ | ✅ | ✅ | 百炼**不支持 qwen-vl / qwen-audio 系列** |
 | 并行工具调用 | ✅ | ⚠️ 未明确 | ✅ | DeepSeek 公告写明「支持并行 Function 调用」；智谱 `tool_choice` **仅支持 auto**，未提并行；百炼需显式传 `parallel_tool_calls: true`（**默认 false**） |
 | 多轮 `tool` 角色回传 | ✅ | ✅ | ✅ | 三家都是 OpenAI 兼容的 `role: "tool"` + `tool_call_id` |
@@ -177,20 +177,47 @@ DeepSeek-Flash   https://api-docs.deepseek.com/zh-cn/quick_start/pricing
 
 ### B1. 对 W2 / W5 的三个直接影响
 
-1. **结构化输出别指望 `json_schema`**：三家只有百炼支持，且要挑模型。W2 做结构化抽取时，**通用方案是自己校验 + 重试**，`json_object` 之外的能力当成加分项而不是前提。
+1. **结构化输出别指望 `json_schema`**：三家只有百炼支持，且要挑模型。W2 做结构化抽取时，**通用方案是自己校验 + 重试**，`json_object` 之外的能力当成加分项而不是前提。（2026-10-30 实测补充：百炼严格模式的字段/枚举白名单是真约束，但 `maxLength` 不生效 → **客户端仍要全量校验**，见 B2）
 2. **强制工具调用只有两家能做到**：智谱 `tool_choice` 仅 auto，意味着「必须调这个工具」在它上面做不到。W5 Agent 的状态机如果要强约束，主线别用智谱。
 3. **图片输入会打破「一份代码三家跑」**：DeepSeek 直接支持；智谱、百炼都要换 VL 模型，而百炼的 VL 又和 tools 互斥。多模态功能不要设计成三家的公共能力。
 
-### B2. 建议 W2 前用代码验的 2 项
+### B2. 实测：百炼 `json_schema` 严格模式（2026-10-30）
 
-文档写的和实际行为可能不一致，这两条影响架构，值得花 10 分钟实测：
+> 一次性实验，脚本不落仓库；原始返回留本机。
+
+**环境**：`qwen3.7-plus`（空间级域名）· `temperature 0.3` · `stream false`
+**schema**：5 字段全 required —— `order_id`（`pattern ^JD[0-9]{10}$`）、`sku_count`（1–20）、`reason`（四值 `enum`）、`urgent`（`boolean`）、`summary`（`maxLength 40`），`additionalProperties: false`。
+**输入**：一段脏客诉（含发票、积分两个干扰问题 + 「尽量详细，能看到的都输出」）。
+
+#### 实验一 · 正常 prompt × 10（看会不会自己违规）
+
+| 判据 | 通过 |
+| --- | --- |
+| 可 `json.loads` | 10/10 |
+| `required` 一个不少 | 10/10 |
+| `enum` 合法 | 10/10 |
+| 类型正确（int / bool） | 10/10 |
+| 无额外字段 | 10/10 |
+| **`maxLength: 40` 生效** | **5/10** ← summary 实际 49–65 字 |
+
+#### 实验二 · 诱导违规 × 5（明确要求输出 schema 外的 `invoice_required` / `points_impact` / `confidence`）
+
+| 组 | 结果 |
+| --- | --- |
+| 严格模式 | **5/5 合规** —— 三个额外字段被全部压掉，只返回 5 个已声明字段，HTTP 200 不报错 |
+| 无 `response_format`（同一诱导） | **5/5 违规** —— 带三重反引号围栏、自造 `product_name` / `quantity` / `return_reason`，真的输出了 `invoice_required: true`、`points_impact`、`confidence: 0.95`，同时缺 `urgent` / `summary` |
+
+#### 结论
+
+1. **`strict` + `additionalProperties:false` 是真约束，不是「鼓励」**：最强诱导下额外字段仍被消除 → 说明是服务端解码约束，不是模型自觉。
+2. **但不是所有关键字都强制**：`maxLength` 实测 10 次违规 5 次；`pattern` / `minimum` / `maximum` 因模型本来就输出合规值，**无法区分是否被强制**（要专门造违规输入才能验）。
+3. **W2 工程结论**：schema 只当「字段与枚举白名单」用，**长度 / 正则 / 数值范围一律在客户端再校验**；`json_object` + prompt 写死字段不可靠（实验二 5/5 翻车），失败重试一次。
+
+### B2b. 还剩 1 项待验
 
 | 要验的 | 怎么验 | 判据 |
 | --- | --- | --- |
-| 百炼 `json_schema` 在你的模型上是否真的严格 | 传一个带 `required` 和 `enum` 的 schema，故意让模型容易违规 | 返回的 JSON 是否 100% 符合 schema（跑 10 次） |
 | DeepSeek 并行工具调用是否真的返回多个 `tool_calls` | 给两个都该调用的工具，看 `message.tool_calls` 长度 | 长度 > 1 才算支持 |
-
-> 结论先按文档走，实测结果回来再改这张表——**别把文档当成实测**。
 
 ### B3. 依据（2026-10-29 查阅）
 
