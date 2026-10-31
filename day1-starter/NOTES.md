@@ -188,12 +188,12 @@ completion_tokens = 800 → 800 / 1e6 × 0.60 = $0.00048
 
 再叠加四个变量：
 
-| 变量       | 影响                                                                |
-|------------|---------------------------------------------------------------------|
-| 缓存命中   | `prompt_tokens_details.cached_tokens` 通常按输入价的 10%–50% 计费   |
-| 推理 token | `completion_tokens_details.reasoning_tokens` 计入输出，按输出价计费 |
-| `n > 1`    | 每个候选都产生 completion tokens，全部计费                          |
-| 流式       | 规范要求 + 别依赖默认 `stream_options.include_usage: true` 才拿得到 `usage`          |
+| 变量       | 影响                                                                                                    |
+|------------|---------------------------------------------------------------------------------------------------------|
+| 缓存命中   | `prompt_tokens_details.cached_tokens` 通常按输入价的 10%–50% 计费                                       |
+| 推理 token | `completion_tokens_details.reasoning_tokens` 计入输出，按输出价计费                                     |
+| `n > 1`    | 每个候选都产生 completion tokens，全部计费                                                              |
+| 流式       | 规范要求显式开启 `stream_options.include_usage: true`；本环境三家默认也会返回 `usage`，但别依赖这个默认 |
 
 > 结论： **输入和输出各算各的**；`total_tokens` 只用于展示和限额，不要拿它乘单价。
 
