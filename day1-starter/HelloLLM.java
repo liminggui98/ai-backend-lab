@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  * java HelloLLM.java
  */
 public class HelloLLM {
-    static final Pattern CONTEN_PATTERN = Pattern.compile("\"content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+    static final Pattern CONTENT_PATTERN = Pattern.compile("\"content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
 
     static HttpClient CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -102,7 +102,7 @@ public class HelloLLM {
             }
 
             String answer = "";
-            Matcher matcher = CONTEN_PATTERN.matcher(response.body());
+            Matcher matcher = CONTENT_PATTERN.matcher(response.body());
             if (matcher.find()) {
                 answer = matcher.group(1);
             }
@@ -143,7 +143,7 @@ public class HelloLLM {
                 break;
             }
 
-            Matcher m = CONTEN_PATTERN.matcher(data);
+            Matcher m = CONTENT_PATTERN.matcher(data);
             while (m.find()) {
                 String piece = unescape(m.group(1));
                 if (piece.isEmpty()) {
