@@ -1,5 +1,4 @@
 ---模型商：DeepSeek，模型：deepseek-flash，非流式输出---
-request: https://api.deepseek.com/chat/completions POST
 payload: {
   "model": "deepseek-flash",
   "stream": false,
@@ -16,7 +15,6 @@ usage: {"prompt_tokens":47,"completion_tokens":60,"total_tokens":107,"prompt_tok
 total: 1.29 s 
 
 ---模型商：DeepSeek，模型：deepseek-flash，流式输出---
-request: https://api.deepseek.com/chat/completions POST
 payload: {
   "model": "deepseek-flash",
   "stream": true,
@@ -34,7 +32,6 @@ usage: {"prompt_tokens":47,"completion_tokens":75,"total_tokens":122,"prompt_tok
 total: 1.25 s 
 
 ---模型商：百炼，模型：qwen3.7-plus，非流式输出---
-request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
 payload: {
   "model": "qwen3.7-plus",
   "stream": false,
@@ -51,7 +48,6 @@ usage: {"prompt_tokens":31,"total_tokens":231,"completion_tokens":200,"prompt_to
 total: 3.89 s 
 
 ---模型商：百炼，模型：qwen3.7-plus，流式输出---
-request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
 payload: {
   "model": "qwen3.7-plus",
   "stream": true,
@@ -69,7 +65,6 @@ usage: {"prompt_tokens":31,"total_tokens":233,"completion_tokens":202,"prompt_to
 total: 3.83 s 
 
 ---模型商：智谱，模型：glm-4-flash，非流式输出---
-request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
 payload: {
   "model": "glm-4-flash",
   "stream": false,
@@ -86,7 +81,6 @@ usage: {"completion_tokens":29,"prompt_tokens":24,"total_tokens":53}
 total: 1.75 s 
 
 ---模型商：智谱，模型：glm-4-flash，流式输出---
-request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
 payload: {
   "model": "glm-4-flash",
   "stream": true,
@@ -105,7 +99,7 @@ total: 2.57 s
 
 
 ---模型商：DeepSeek，模型：deepseek-flash，非流式输出---
-request: https://api.deepseek.com/chat/completions POST
+
 payload: {
   "model": "deepseek-flash",
   "stream": false,
@@ -122,7 +116,6 @@ usage: {"prompt_tokens":47,"completion_tokens":68,"total_tokens":115,"prompt_tok
 total: 1.53 s
 
 ---模型商：DeepSeek，模型：deepseek-flash，流式输出---
-request: https://api.deepseek.com/chat/completions POST
 payload: {
   "model": "deepseek-flash",
   "stream": true,
@@ -140,7 +133,7 @@ usage: {"prompt_tokens":47,"completion_tokens":74,"total_tokens":121,"prompt_tok
 total: 1.15 s
 
 ---模型商：百炼，模型：qwen3.7-plus，非流式输出---
-request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
+
 payload: {
   "model": "qwen3.7-plus",
   "stream": false,
@@ -157,7 +150,6 @@ usage: {"prompt_tokens":31,"total_tokens":284,"completion_tokens":253,"prompt_to
 total: 4.78 s
 
 ---模型商：百炼，模型：qwen3.7-plus，流式输出---
-request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
 payload: {
   "model": "qwen3.7-plus",
   "stream": true,
@@ -175,7 +167,6 @@ usage: {"prompt_tokens":31,"total_tokens":240,"completion_tokens":209,"prompt_to
 total: 3.87 s
 
 ---模型商：智谱，模型：glm-4-flash，非流式输出---
-request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
 payload: {
   "model": "glm-4-flash",
   "stream": false,
@@ -192,7 +183,6 @@ usage: {"completion_tokens":28,"prompt_tokens":24,"total_tokens":52}
 total: 1.29 s
 
 ---模型商：智谱，模型：glm-4-flash，流式输出---
-request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
 payload: {
   "model": "glm-4-flash",
   "stream": true,
@@ -213,7 +203,6 @@ total: 1.07 s
 
 
 ---模型商：DeepSeek，模型：deepseek-flash，非流式输出---
-request: https://api.deepseek.com/chat/completions POST
 payload: {
   "model": "deepseek-flash",
   "stream": false,
@@ -230,7 +219,6 @@ usage: {"prompt_tokens":47,"completion_tokens":87,"total_tokens":134,"prompt_tok
 total: 1.74 s
 
 ---模型商：DeepSeek，模型：deepseek-flash，流式输出---
-request: https://api.deepseek.com/chat/completions POST
 payload: {
   "model": "deepseek-flash",
   "stream": true,
@@ -248,7 +236,6 @@ usage: {"prompt_tokens":47,"completion_tokens":57,"total_tokens":104,"prompt_tok
 total: 0.87 s
 
 ---模型商：百炼，模型：qwen3.7-plus，非流式输出---
-request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
 payload: {
   "model": "qwen3.7-plus",
   "stream": false,
@@ -265,7 +252,6 @@ usage: {"prompt_tokens":31,"total_tokens":241,"completion_tokens":210,"prompt_to
 total: 3.97 s
 
 ---模型商：百炼，模型：qwen3.7-plus，流式输出---
-request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
 payload: {
   "model": "qwen3.7-plus",
   "stream": true,
@@ -283,7 +269,6 @@ usage: {"prompt_tokens":31,"total_tokens":299,"completion_tokens":268,"prompt_to
 total: 4.77 s
 
 ---模型商：智谱，模型：glm-4-flash，非流式输出---
-request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
 payload: {
   "model": "glm-4-flash",
   "stream": false,
@@ -300,7 +285,6 @@ usage: {"completion_tokens":42,"prompt_tokens":24,"total_tokens":66}
 total: 2.09 s
 
 ---模型商：智谱，模型：glm-4-flash，流式输出---
-request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
 payload: {
   "model": "glm-4-flash",
   "stream": true,

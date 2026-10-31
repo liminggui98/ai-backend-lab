@@ -133,13 +133,11 @@ public class HelloLLM {
             }
 
             System.out.printf("""
-                            request: %s
                             payload: %s
                             answer: %s
                             usage: %s
                             total: %.2f s %n
                             """,
-                    request,
                     payload,
                     answer,
                     jsonObjectAfter(response.body(), "usage"),
@@ -187,14 +185,12 @@ public class HelloLLM {
         }
 
         System.out.printf("""
-                        request: %s
                         payload: %s
                         answer: %s
                         firstToken: %.2f ms
                         usage: %s
                         total: %.2f s %n
                         """,
-                request,
                 payload,
                 answer,
                 firstTokenTime,
