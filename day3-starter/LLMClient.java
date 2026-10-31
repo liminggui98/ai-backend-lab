@@ -9,20 +9,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
- * Day 3：统一 LLM 客户端（零依赖，只用 JDK 21）。
+ * 统一 LLM 客户端（零依赖，只用 JDK 21）。
  *
- * <p>Day 1 的 {@code HelloLLM.java} 只证明了「能调通一次」，这个类要解决的是
- * 「三家能当成一家用」：同一个方法签名，换 provider 只换配置。
+ * <p>{@code HelloLLM.java} 只证明了「能调通一次」。
  *
  * <h2>要封装掉的四件事</h2>
  * <ol>
@@ -31,8 +27,8 @@ import java.util.stream.Stream;
  *   <li><b>流式解析统一</b>：三家的 chunk 都归一成 {@link Chunk}（正文 / 推理 / 结束原因），
  *       推理模型的 {@code reasoning_content} 单独一个字段，不和答案混在一起。</li>
  *   <li><b>超时与错误归一</b>：{@code HttpRequest.timeout} 只管到响应头，body 流另设「读空闲超时」
- *       看门狗（Day 1 在百炼上卡过两分钟）；429 / 5xx 退避重试；错误统一抛 {@link IllegalStateException}。</li>
- *   <li><b>usage 记账</b>：每次调用带回 prompt / completion / total token，W6 的成本模型直接吃这份数据。</li>
+ *       看门狗；429 / 5xx 退避重试；错误统一抛 {@link IllegalStateException}。</li>
+ *   <li><b>usage 记账</b>：每次调用带回 prompt / completion / total token</li>
  * </ol>
  *
  * <h2>为什么不引 JSON 库</h2>
@@ -50,11 +46,11 @@ import java.util.stream.Stream;
  * </pre>
  *
  * <h2>环境变量</h2>
- * <p>按 provider 分开命名，避免 Day 1 那个坑——三段 {@code LLM_*} 全开时，后 source 的会静默覆盖前面的。
  * <pre>
  *   DEEPSEEK_API_KEY=sk-xxx                    （可选 DEEPSEEK_BASE_URL / DEEPSEEK_MODEL）
  *   ZHIPU_API_KEY=xxx                          （可选 ZHIPU_BASE_URL / ZHIPU_MODEL）
  *   BAILIAN_API_KEY=sk-ws-xxx                  （必填 BAILIAN_BASE_URL，空间级 key 只能配空间级域名）
+ *   BAILIAN_BASE_URL=xxx
  * </pre>
  */
 public final class LLMClient {
@@ -64,30 +60,59 @@ public final class LLMClient {
     // ==================================================================
 
     public record Message(String role, String content) {
-        public static Message system(String text) { return new Message("system", text); }
-        public static Message user(String text)   { return new Message("user", text); }
+        public static Message system(String text) {
+            return new Message("system", text);
+        }
+
+        public static Message user(String text) {
+            return new Message("user", text);
+        }
     }
 
-    /** usage 三件套：输入 / 输出 / 合计。注意输入和输出单价不同，别只看 total。 */
+    /**
+     * usage 三件套：输入 / 输出 / 合计。注意输入和输出单价不同，别只看 total。
+     */
     public record Usage(int promptTokens, int completionTokens, int totalTokens) {
         public static final Usage EMPTY = new Usage(0, 0, 0);
-        public boolean isEmpty() { return totalTokens == 0; }
-        public String shortText() { return promptTokens + "/" + completionTokens + "/" + totalTokens; }
+
+        public boolean isEmpty() {
+            return totalTokens == 0;
+        }
+
+        public String shortText() {
+            return promptTokens + "/" + completionTokens + "/" + totalTokens;
+        }
     }
 
-    /** 流式增量帧。reasoning != "" 说明这是推理模型的「思考」阶段，还没到答案。 */
+    /**
+     * 流式增量帧。reasoning != "" 说明这是推理模型的「思考」阶段，还没到答案。
+     */
     public record Chunk(String delta, String reasoning, String finishReason) {
-        public boolean isEmpty() { return delta.isEmpty() && reasoning.isEmpty(); }
+        public boolean isEmpty() {
+            return delta.isEmpty() && reasoning.isEmpty();
+        }
     }
 
     public record Options(double temperature, int maxTokens, Duration idleTimeout, int maxRetries) {
         public static Options defaults() {
             return new Options(0.3, 1024, Duration.ofSeconds(20), 2);
         }
-        public Options temperature(double v)     { return new Options(v, maxTokens, idleTimeout, maxRetries); }
-        public Options maxTokens(int v)          { return new Options(temperature, v, idleTimeout, maxRetries); }
-        public Options idleTimeout(Duration v)   { return new Options(temperature, maxTokens, v, maxRetries); }
-        public Options maxRetries(int v)         { return new Options(temperature, maxTokens, idleTimeout, v); }
+
+        public Options temperature(double v) {
+            return new Options(v, maxTokens, idleTimeout, maxRetries);
+        }
+
+        public Options maxTokens(int v) {
+            return new Options(temperature, v, idleTimeout, maxRetries);
+        }
+
+        public Options idleTimeout(Duration v) {
+            return new Options(temperature, maxTokens, v, maxRetries);
+        }
+
+        public Options maxRetries(int v) {
+            return new Options(temperature, maxTokens, idleTimeout, v);
+        }
     }
 
     /**
@@ -96,8 +121,9 @@ public final class LLMClient {
      */
     public record Reply(String provider, String model, String text, String reasoning,
                         String finishReason, Usage usage, long firstTokenMs, long totalMs) {
-
-        /** 首 token 之后的生成速度，单位 token/s。 */
+        /**
+         * 首 token 之后的生成速度，单位 token/s。
+         */
         public double tokensPerSecond() {
             long span = totalMs - firstTokenMs;
             if (firstTokenMs < 0 || span <= 0 || usage.completionTokens() == 0) return 0;
@@ -112,10 +138,14 @@ public final class LLMClient {
     public interface Provider {
         String name();
 
-        /** 非流式，返回完整答案。usage 最准，适合做成本核算。 */
+        /**
+         * 非流式，返回完整答案。usage 最准，适合做成本核算。
+         */
         Reply chat(List<Message> messages, Options opts);
 
-        /** 流式，逐帧回调。onChunk 可以为 null。 */
+        /**
+         * 流式，逐帧回调。onChunk 可以为 null。
+         */
         Reply stream(List<Message> messages, Options opts, Consumer<Chunk> onChunk);
     }
 
@@ -141,7 +171,10 @@ public final class LLMClient {
             this.http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
         }
 
-        @Override public String name() { return name; }
+        @Override
+        public String name() {
+            return name;
+        }
 
         // ---------------- 非流式 ----------------
 
@@ -199,64 +232,86 @@ public final class LLMClient {
             long idleMs = Math.max(1_000, opts.idleTimeout().toMillis());
 
             // 看门狗：body 流没有超时，长时间收不到数据就主动关流。
-            ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor(r -> {
+            ThreadFactory threadFactory = r -> {
                 Thread t = new Thread(r, "llm-idle-watchdog-" + name);
                 t.setDaemon(true);
                 return t;
-            });
-            ScheduledFuture<?> future = watchdog.scheduleAtFixedRate(() -> {
-                if (System.nanoTime() - lastActivity.get() > idleMs * 1_000_000L) {
-                    aborted.set(true);
-                    try {
-                        lines.close();
-                    } catch (Exception ignored) {
-                        // 关流本身失败没什么可做的，异常会从读线程浮出来
+            };
+            try (ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor(threadFactory)) {
+                ScheduledFuture<?> future = watchdog.scheduleAtFixedRate(() -> {
+                    if (System.nanoTime() - lastActivity.get() > idleMs * 1_000_000L) {
+                        aborted.set(true);
+                        try {
+                            lines.close();
+                        } catch (Exception ignored) {
+                            // 关流本身失败没什么可做的，异常会从读线程浮出来
+                        }
                     }
-                }
-            }, idleMs, 500, TimeUnit.MILLISECONDS);
+                }, idleMs, 500, TimeUnit.MILLISECONDS);
 
-            try (Stream<String> stream = lines) {
-                for (String line : (Iterable<String>) stream::iterator) {
-                    lastActivity.set(System.nanoTime());
-                    if (!line.startsWith("data:")) continue;
+                try (Stream<String> stream = lines) {
+                    for (String line : (Iterable<String>) stream::iterator) {
+                        lastActivity.set(System.nanoTime());
+                        if (!line.startsWith("data:")) {
+                            continue;
+                        }
 
-                    String data = line.substring(5).trim();
-                    if (data.isEmpty() || data.equals("[DONE]")) {
-                        if (data.equals("[DONE]")) break;
-                        continue;
+                        String data = line.substring(5).trim();
+                        if (data.isEmpty() || data.equals("[DONE]")) {
+                            if (data.equals("[DONE]")) {
+                                break;
+                            }
+                            continue;
+                        }
+
+                        Map<String, Object> root = asMap(Json.parse(data));
+                        modelName = str(root.get("model"), modelName);
+                        if (root.get("usage") != null) {
+                            usage = usageOf(root.get("usage"));
+                        }
+
+                        Map<String, Object> choice = firstChoice(root);
+                        if (choice.isEmpty()) {
+                            continue;
+                        }
+
+                        String fr = str(choice.get("finish_reason"), "");
+                        if (!fr.isEmpty()) {
+                            finishReason = fr;
+                        }
+
+                        Map<String, Object> delta = asMap(choice.get("delta"));
+                        String r = str(delta.get("reasoning_content"), "");
+                        String d = str(delta.get("content"), "");
+
+                        // 首帧只带 role，content 是空串——用它算首 token 会把延迟算低。
+                        if (r.isEmpty() && d.isEmpty()) {
+                            continue;
+                        }
+
+                        if (firstTokenMs < 0) {
+                            firstTokenMs = elapsedMs(start);
+                        }
+                        if (!r.isEmpty()) {
+                            reasoning.append(r);
+                        }
+                        if (!d.isEmpty()) {
+                            text.append(d);
+                        }
+                        if (onChunk != null) {
+                            onChunk.accept(new Chunk(d, r, fr));
+                        }
                     }
-
-                    Map<String, Object> root = asMap(Json.parse(data));
-                    modelName = str(root.get("model"), modelName);
-                    if (root.get("usage") != null) usage = usageOf(root.get("usage"));
-
-                    Map<String, Object> choice = firstChoice(root);
-                    if (choice.isEmpty()) continue;
-
-                    String fr = str(choice.get("finish_reason"), "");
-                    if (!fr.isEmpty()) finishReason = fr;
-
-                    Map<String, Object> delta = asMap(choice.get("delta"));
-                    String r = str(delta.get("reasoning_content"), "");
-                    String d = str(delta.get("content"), "");
-
-                    // 首帧只带 role，content 是空串——用它算首 token 会把延迟算低。
-                    if (r.isEmpty() && d.isEmpty()) continue;
-
-                    if (firstTokenMs < 0) firstTokenMs = elapsedMs(start);
-                    if (!r.isEmpty()) reasoning.append(r);
-                    if (!d.isEmpty()) text.append(d);
-                    if (onChunk != null) onChunk.accept(new Chunk(d, r, fr));
+                } catch (RuntimeException e) {
+                    if (aborted.get()) {
+                        throw new RuntimeException(
+                                "流式读超时：" + idleMs + " ms 没收到任何字节（" + name + "）", e);
+                    }
+                    throw e;
+                } finally {
+                    future.cancel(false);
+                    watchdog.shutdownNow();
                 }
-            } catch (RuntimeException e) {
-                if (aborted.get()) {
-                    throw new RuntimeException(
-                            "流式读超时：" + idleMs + " ms 没收到任何字节（" + name + "）", e);
-                }
-                throw e;
-            } finally {
-                future.cancel(false);
-                watchdog.shutdownNow();
             }
 
             return new Reply(name, modelName, text.toString(), reasoning.toString(),
@@ -271,7 +326,9 @@ public final class LLMClient {
             for (int attempt = 0; ; attempt++) {
                 try {
                     HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
-                    if (response.statusCode() == 200) return response.body();
+                    if (response.statusCode() == 200) {
+                        return response.body();
+                    }
 
                     boolean retryable = response.statusCode() == 429 || response.statusCode() >= 500;
                     if (retryable && attempt < opts.maxRetries()) {
@@ -297,14 +354,17 @@ public final class LLMClient {
             StringBuilder body = new StringBuilder(256);
             body.append("{\"model\":").append(Json.quote(model));
             body.append(",\"stream\":").append(stream);
+            body.append(",\"stream_options\":").append(stream ? "{\"include_usage\": true}" : "{}");
             body.append(",\"temperature\":").append(opts.temperature());
             body.append(",\"max_tokens\":").append(opts.maxTokens());
             body.append(",\"messages\":[");
             for (int i = 0; i < messages.size(); i++) {
-                if (i > 0) body.append(',');
+                if (i > 0) {
+                    body.append(',');
+                }
                 Message m = messages.get(i);
                 body.append("{\"role\":").append(Json.quote(m.role()))
-                    .append(",\"content\":").append(Json.quote(m.content())).append('}');
+                        .append(",\"content\":").append(Json.quote(m.content())).append('}');
             }
             body.append("]}");
 
@@ -350,7 +410,9 @@ public final class LLMClient {
     }
 
     private static void add(List<Provider> into, String name, String key, String baseUrl, String model) {
-        if (isBlank(key) || isBlank(baseUrl)) return;
+        if (isBlank(key) || isBlank(baseUrl)) {
+            return;
+        }
         into.add(new OpenAiCompatible(name, baseUrl, model, key));
     }
 
@@ -367,6 +429,7 @@ public final class LLMClient {
         String wanted = arg(args, "--provider", "all");
         String prompt = arg(args, "--prompt", "用一句话解释什么是 RAG");
         boolean streaming = !hasFlag(args, "--chat");
+
         Options opts = Options.defaults()
                 .idleTimeout(Duration.ofMillis(Long.parseLong(arg(args, "--idle-ms", "20000"))))
                 .maxTokens(Integer.parseInt(arg(args, "--max-tokens", "1024")));
@@ -384,29 +447,37 @@ public final class LLMClient {
                 Message.system("你是一个简洁的技术助手，回答不超过三句话。"),
                 Message.user(prompt));
 
-        System.out.printf("%-9s %-16s %9s %9s %16s %7s%n",
-                "provider", "model", "首token", "总耗时", "tokens(p/c/t)", "tok/s");
+        System.out.printf("%-9s %-16s %9s %9s %16s %7s %9s%n",
+                "provider", "model", "首token", "总耗时", "tokens(p/c/t)", "tok/s", "answer");
         System.out.println("-".repeat(72));
 
         for (Provider provider : providers) {
-            if (!"all".equals(wanted) && !wanted.equals(provider.name())) continue;
+            if (!"all".equals(wanted) && !wanted.equals(provider.name())) {
+                continue;
+            }
 
             try {
-                Reply reply = streaming
-                        ? provider.stream(messages, opts, chunk -> {
-                            if (!chunk.delta().isEmpty()) System.out.print(chunk.delta());
+                StringBuilder answer = new StringBuilder();
+                Reply reply = streaming ? provider.stream(messages, opts,
+                        chunk -> {
+                            if (!chunk.delta().isEmpty()) {
+                                answer.append(chunk.delta());
+                            }
                         })
                         : provider.chat(messages, opts);
 
-                if (streaming) System.out.println();
+                if (streaming) {
+                    System.out.println();
+                }
 
-                System.out.printf("%-9s %-16s %9s %9s %16s %7.1f%n",
+                System.out.printf("%-9s %-16s %9s %9s %16s %7.1f %9s",
                         reply.provider(),
                         reply.model(),
                         reply.firstTokenMs() < 0 ? "-" : reply.firstTokenMs() + "ms",
                         reply.totalMs() + "ms",
                         reply.usage().isEmpty() ? "-" : reply.usage().shortText(),
-                        reply.tokensPerSecond());
+                        reply.tokensPerSecond(),
+                        answer);
             } catch (RuntimeException e) {
                 System.out.printf("%-9s %-16s  ❌ %s%n", provider.name(), "-", e.getMessage().split("\n")[0]);
             }
@@ -418,7 +489,7 @@ public final class LLMClient {
     // ==================================================================
 
     /**
-     * 解析器的自检。这几种帧是 Day 1 真实抓到的：
+     * 解析器的自检。
      * 首帧只有 role、推理模型的 reasoning_content、带 usage 的尾帧、unicode 转义。
      */
     static void selftest() {
@@ -480,7 +551,9 @@ public final class LLMClient {
         private final String s;
         private int i;
 
-        private Json(String s) { this.s = s; }
+        private Json(String s) {
+            this.s = s;
+        }
 
         static Object parse(String text) {
             Json j = new Json(text);
@@ -496,7 +569,7 @@ public final class LLMClient {
             for (int k = 0; k < v.length(); k++) {
                 char c = v.charAt(k);
                 switch (c) {
-                    case '"'  -> b.append("\\\"");
+                    case '"' -> b.append("\\\"");
                     case '\\' -> b.append("\\\\");
                     case '\n' -> b.append("\\n");
                     case '\r' -> b.append("\\r");
@@ -548,7 +621,10 @@ public final class LLMClient {
             expect('{');
             Map<String, Object> map = new LinkedHashMap<>();
             skip();
-            if (peek() == '}') { i++; return map; }
+            if (peek() == '}') {
+                i++;
+                return map;
+            }
             while (true) {
                 skip();
                 String key = string();
@@ -566,7 +642,10 @@ public final class LLMClient {
             expect('[');
             List<Object> list = new ArrayList<>();
             skip();
-            if (peek() == ']') { i++; return list; }
+            if (peek() == ']') {
+                i++;
+                return list;
+            }
             while (true) {
                 list.add(value());
                 skip();
@@ -582,18 +661,21 @@ public final class LLMClient {
             while (true) {
                 char c = s.charAt(i++);
                 if (c == '"') return b.toString();
-                if (c != '\\') { b.append(c); continue; }
+                if (c != '\\') {
+                    b.append(c);
+                    continue;
+                }
                 char e = s.charAt(i++);
                 switch (e) {
-                    case '"'  -> b.append('"');
+                    case '"' -> b.append('"');
                     case '\\' -> b.append('\\');
-                    case '/'  -> b.append('/');
-                    case 'b'  -> b.append('\b');
-                    case 'f'  -> b.append('\f');
-                    case 'n'  -> b.append('\n');
-                    case 'r'  -> b.append('\r');
-                    case 't'  -> b.append('\t');
-                    case 'u'  -> {
+                    case '/' -> b.append('/');
+                    case 'b' -> b.append('\b');
+                    case 'f' -> b.append('\f');
+                    case 'n' -> b.append('\n');
+                    case 'r' -> b.append('\r');
+                    case 't' -> b.append('\t');
+                    case 'u' -> {
                         b.append((char) Integer.parseInt(s.substring(i, i + 4), 16));
                         i += 4;
                     }
@@ -626,13 +708,17 @@ public final class LLMClient {
 
     static Map<String, Object> firstChoice(Map<String, Object> root) {
         Object choices = root.get("choices");
-        if (choices instanceof List<?> list && !list.isEmpty()) return asMap(list.get(0));
+        if (choices instanceof List<?> list && !list.isEmpty()) {
+            return asMap(list.getFirst());
+        }
         return Map.of();
     }
 
     static Usage usageOf(Object value) {
         Map<String, Object> map = asMap(value);
-        if (map.isEmpty()) return Usage.EMPTY;
+        if (map.isEmpty()) {
+            return Usage.EMPTY;
+        }
         return new Usage(num(map.get("prompt_tokens")), num(map.get("completion_tokens")), num(map.get("total_tokens")));
     }
 
@@ -661,31 +747,37 @@ public final class LLMClient {
         }
     }
 
-    static String env(String key) { return System.getenv(key); }
+    static String env(String key) {
+        return System.getenv(key);
+    }
 
     static String envOr(String key, String fallback) {
         String v = System.getenv(key);
         return isBlank(v) ? fallback : v;
     }
 
-    static String firstNonBlank(String... values) {
-        for (String v : values) if (!isBlank(v)) return v;
-        return null;
+    static boolean isBlank(String v) {
+        return v == null || v.isBlank();
     }
 
-    static boolean isBlank(String v) { return v == null || v.isBlank(); }
-
     static boolean hasFlag(String[] args, String flag) {
-        for (String a : args) if (flag.equals(a)) return true;
+        for (String a : args) {
+            if (flag.equals(a)) {
+                return true;
+            }
+        }
         return false;
     }
 
     static String arg(String[] args, String name, String fallback) {
         for (int k = 0; k < args.length - 1; k++) {
-            if (name.equals(args[k])) return args[k + 1];
+            if (name.equals(args[k])) {
+                return args[k + 1];
+            }
         }
         return fallback;
     }
 
-    private LLMClient() { }
+    private LLMClient() {
+    }
 }
