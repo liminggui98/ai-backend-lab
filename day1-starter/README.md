@@ -1,15 +1,3 @@
----
-day: 1
-plan_date: 2026-10-29
-date: 2026-10-28          # 实际执行，比计划早 1 天
-week: W0
-theme: 环境、pgvector、三家模型流式接入
-status: 已完成
-spent_h:                  # 与 Day2/Day3 合并记 12 h，未单列
-deliverable: 环境清单 + HelloLLM.java 流式调用 + 10 个待答问题
-commit: 2ada8f8
----
-
 # 学习内容（10/29）
 
 > 当天笔记：见 [NOTES.md](NOTES.md)（环境验证 + 三家实测 + 10 个问题）。
@@ -67,9 +55,9 @@ RAG 是先把相关资料检索出来、再交给大模型生成答案的技术�
 
 | provider         | LLM_BASE_URL                                                     | LLM_MODEL       | Key                  |
 |------------------|------------------------------------------------------------------|-----------------|----------------------|
-| DeepSeek         | `https://api.deepseek.com`                                       | `deepseek-chat` | `sk-`（平台自建）    |
+| DeepSeek         | `https://api.deepseek.com`                                       | `deepseek-flash` | `sk-`（平台自建）    |
 | 智谱             | `https://open.bigmodel.cn/api/paas/v4`                           | `glm-4-flash`   | `sk-`（免费额度）    |
-| 百炼（专属空间） | `https://ws-xxx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | 以控制台为准    | `sk-ws-`（绑定空间） |
+| 百炼（专属空间） | `https://ws-xxx.cn-xxx.maas.aliyuncs.com/compatible-mode/v1` | 以控制台为准    | `sk-ws-`（绑定空间） |
 
 > 百炼的 DashScope 公共域名（`dashscope.aliyuncs.com`）自 2026-09-30 起进入维护期，新业务走专属空间域名。
 > 空间级 key 必须配空间级域名，混用会返回 `403 AccessDenied.Unpurchased`。
@@ -78,7 +66,7 @@ RAG 是先把相关资料检索出来、再交给大模型生成答案的技术�
 
 | provider | 模型          | 首 token    | 总耗时    |
 |----------|---------------|-------------|-----------|
-| DeepSeek | deepseek-chat | 0.36–0.98 s | 1.0–1.3 s |
+| DeepSeek | deepseek-flash | 0.36–0.98 s | 1.0–1.3 s |
 | 智谱     | glm-4-flash   | 1.4–1.6 s   | 2.3–3.1 s |
 | 百炼     | qwen3.7-plus  | 0.6–10.7 s  | 3.8–11 s  |
 

@@ -16,14 +16,14 @@ import java.util.stream.Stream;
  * java HelloLLM.java
  * <p>
  * 三个 provider 都可以跑，换 LLM_BASE_URL / LLM_MODEL / LLM_API_KEY 即可：
- * DeepSeek : https://api.deepseek.com                     deepseek-chat
- * 通义百炼  : https://dashscope.aliyuncs.com/compatible-mode/v1   qwen-plus
+ * DeepSeek : https://api.deepseek.com                     deepseek-flash
+ * 通义百炼  : https://ws-xxx.cn-xxx.maas.aliyuncs.com/compatible-mode/v1   qwen3.7-plus
  * 智谱      : https://open.bigmodel.cn/api/paas/v4        glm-4-flash
  */
 public class HelloLLM {
     static final String BASE_URL = env("LLM_BASE_URL", "https://api.deepseek.com");
 
-    static final String MODEL = env("LLM_MODEL", "deepseek-chat");
+    static final String MODEL = env("LLM_MODEL", "deepseek-flash");
 
     static final String API_KEY = firstNonBlank(
             System.getenv("LLM_API_KEY"),

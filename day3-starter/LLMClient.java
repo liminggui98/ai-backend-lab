@@ -376,7 +376,7 @@ public final class LLMClient {
             System.err.println("没有可用的 provider。至少配一个：");
             System.err.println("  export DEEPSEEK_API_KEY=sk-xxx");
             System.err.println("  export ZHIPU_API_KEY=xxx");
-            System.err.println("  export BAILIAN_API_KEY=sk-ws-xxx BAILIAN_BASE_URL=https://ws-xxx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1");
+            System.err.println("  export BAILIAN_API_KEY=sk-ws-xxx BAILIAN_BASE_URL=https://ws-xxx.cn-xxx.maas.aliyuncs.com/compatible-mode/v1");
             System.exit(1);
         }
 

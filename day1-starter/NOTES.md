@@ -2,13 +2,13 @@
 
 ## 一、跑通了什么
 
-| 项                | 结果                            | 怎么验证的                                                                                  |
-|-------------------|---------------------------------|---------------------------------------------------------------------------------------------|
-| Docker + pgvector | ✅ pg16，vector 0.8.7           | `select * from healthcheck;` 有 1 行                                                        |
-| DeepSeek 流式     | ✅ deepseek-flash               | 注入环境变量 `DEEPSEEK_API_KEY`，<br/>运行 [HelloLLM.java](HelloLLM.java)                   |
-| 智谱流式          | ✅ glm-4-flash                  | 注入 `ZHIPU_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java) |
-| 百炼流式          | ✅ qwen3.7-plus（专属空间域名） | 注入 `ZHIPU_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java) |
-| 仓库提交          | ✅ ai-backend-lab               | github `ai-backend-lib` 有代码，可访问                                                      |
+| 项                | 结果                            | 怎么验证的                                                                                    |
+|-------------------|---------------------------------|-----------------------------------------------------------------------------------------------|
+| Docker + pgvector | ✅ pg16，vector 0.8.7           | `select * from healthcheck;` 有 1 行                                                          |
+| DeepSeek 流式     | ✅ deepseek-flash               | 注入环境变量 `DEEPSEEK_API_KEY`，<br/>运行 [HelloLLM.java](HelloLLM.java)                     |
+| 智谱流式          | ✅ glm-4-flash                  | 注入 `ZHIPU_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java)   |
+| 百炼流式          | ✅ qwen3.7-plus（专属空间域名） | 注入 `BAILIAN_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java) |
+| 仓库提交          | ✅ ai-backend-lab               | github `ai-backend-lab` 有代码，可访问                                                        |
 
 代码在 [HelloLLM.java](HelloLLM.java)：零依赖，只用 JDK 21 的 `HttpClient` + `BodyHandlers.ofLines()`。
 
@@ -18,17 +18,17 @@
 
 环境参考 [环境清单.md](环境清单.md)
 
-| provider | 模型          | 首 token    | 总耗时    |
-|----------|---------------|-------------|-----------|
-| DeepSeek | deepseek-chat | 0.36–0.98 s | 1.0–1.3 s |
-| 智谱     | glm-4-flash   | 1.4–1.6 s   | 2.3–3.1 s |
-| 百炼     | qwen3.7-plus  | 0.6–10.7 s  | 3.8–11 s  |
+| provider | 模型           | 首 token    | 总耗时    |
+|----------|----------------|-------------|-----------|
+| DeepSeek | deepseek-flash | 0.36–0.98 s | 1.0–1.3 s |
+| 智谱     | glm-4-flash    | 1.4–1.6 s   | 2.3–3.1 s |
+| 百炼     | qwen3.7-plus   | 0.6–10.7 s  | 3.8–11 s  |
 
 差异：
 
 - 百炼是推理模型：先流 `reasoning_content`、思考结束才流 `content`。它的「首 token」取决于思考长度，和另外两家不可比。
 
-## 三、今天亲眼确认的 4 个事实
+## 三、今天亲眼确认的 3 个事实
 
 1. 流式每一帧都是 `chat.completion.chunk`，增量在 `choices[0].delta`；非流式的答案在 `choices[0].message.content`
    。两者结构不同，不能拿同一套解析。

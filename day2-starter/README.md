@@ -1,14 +1,3 @@
----
-day: 2
-plan_date: 2026-10-30
-date: 2026-10-29
-week: W0
-theme: 31 份 JD 词频、60 家公司池、简历 v1
-status: 已完成
-spent_h:
-deliverable: JD词频分析.md + keyword_stats.json + 62 家公司 + 简历 v1
----
-
 # Day 2 Starter（10/30）
 
 > 当天交付：**JD 词频分析**。主文档见 [JD词频分析.md](JD词频分析.md)，原始语料在 [JD库/](JD库/)。
