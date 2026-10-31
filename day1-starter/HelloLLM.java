@@ -48,9 +48,31 @@ public class HelloLLM {
     static List<LLMProvider> LLM_PROVIDERS = new ArrayList<>();
 
     static {
-        LLM_PROVIDERS.add(new LLMProvider("DeepSeek", System.getenv("DEEPSEEK_BASE_URL"), System.getenv("DEEPSEEK_MODEL"), System.getenv("DEEPSEEK_API_KEY")));
-        LLM_PROVIDERS.add(new LLMProvider("百炼", System.getenv("BAILIAN_BASE_URL"), System.getenv("BAILIAN_MODEL"), System.getenv("BAILIAN_API_KEY")));
-        LLM_PROVIDERS.add(new LLMProvider("智谱", System.getenv("ZHIPU_BASE_URL"), System.getenv("ZHIPU_MODEL"), System.getenv("ZHIPU_API_KEY")));
+        try {
+            LLMProvider deepseek = new LLMProvider("DeepSeek", System.getenv("DEEPSEEK_BASE_URL"), System.getenv("DEEPSEEK_MODEL"), System.getenv("DEEPSEEK_API_KEY"));
+            LLM_PROVIDERS.add(deepseek);
+        } catch (RuntimeException e) {
+            System.out.println("加载DeepSeek配置失败");
+        }
+
+        try {
+            LLMProvider bailian = new LLMProvider("百炼", System.getenv("BAILIAN_BASE_URL"), System.getenv("BAILIAN_MODEL"), System.getenv("BAILIAN_API_KEY"));
+            LLM_PROVIDERS.add(bailian);
+        } catch (RuntimeException e) {
+            System.out.println("加载百炼配置失败");
+        }
+
+        try {
+            LLMProvider zhipu = new LLMProvider("智谱", System.getenv("ZHIPU_BASE_URL"), System.getenv("ZHIPU_MODEL"), System.getenv("ZHIPU_API_KEY"));
+            LLM_PROVIDERS.add(zhipu);
+        } catch (RuntimeException e) {
+            System.out.println("加载智谱配置失败");
+        }
+
+        if (LLM_PROVIDERS.isEmpty()) {
+            System.out.println("没有配置任何模型商");
+            throw new RuntimeException("没有配置任何模型商，请检查.env文件");
+        }
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -88,7 +110,7 @@ public class HelloLLM {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(llmProvider.baseUrl() + "/chat/completions"))
-                .timeout(Duration.ofSeconds(60))
+                .timeout(Duration.ofSeconds(15))
                 .header("Authorization", "Bearer " + llmProvider.apiKey())
                 .header("Content-Type", "application/json")
                 .header("Accept", stream ? "text/event-stream" : "application/json")

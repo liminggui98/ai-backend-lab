@@ -5,17 +5,17 @@
 
 ## 进度
 
-| 周   | 主题                                  | 交付                          | 状态  |
-| --- | ----------------------------------- | --------------------------- | --- |
-| W0  | 环境、模型接入、选型                          | pgvector + 三家 provider 流式调用 | ✅   |
-| W1  | Java 21 + Spring Boot 3 + Spring AI | 可切换 provider 的流式服务          | 🚧   |
-| W2  | Prompt / Tool Calling / Memory      | 项目 0：AI 助手                  | ⬜   |
-| W3  | RAG 上：Tika / 切分 / PgVector          | ingest 管道 + 检索接口            | ⬜   |
-| W4  | RAG 下：混合检索 / Rerank / 评测            | 项目一：企业知识库                   | ⬜   |
-| W5  | Agent：LangChain4j / 状态机 / MCP       | 项目二：异常处理 Agent              | ⬜   |
-| W6  | 网关 + 工程化                            | 项目三：LLM 统一网关                | ⬜   |
-| W7  | 面试冲刺                                | 62 题 + 3 套系统设计              | ⬜   |
-| W8  | 面试与 Offer                           | —                           | ⬜   |
+| 周 | 主题                                | 交付                              | 状态 |
+|----|-------------------------------------|-----------------------------------|------|
+| W0 | 环境、模型接入、选型                | pgvector + 三家 provider 流式调用 | ✅   |
+| W1 | Java 21 + Spring Boot 3 + Spring AI | 可切换 provider 的流式服务        | 🚧   |
+| W2 | Prompt / Tool Calling / Memory      | 项目 0：AI 助手                   | ⬜   |
+| W3 | RAG 上：Tika / 切分 / PgVector      | ingest 管道 + 检索接口            | ⬜   |
+| W4 | RAG 下：混合检索 / Rerank / 评测    | 项目一：企业知识库                | ⬜   |
+| W5 | Agent：LangChain4j / 状态机 / MCP   | 项目二：异常处理 Agent            | ⬜   |
+| W6 | 网关 + 工程化                       | 项目三：LLM 统一网关              | ⬜   |
+| W7 | 面试冲刺                            | 62 题 + 3 套系统设计              | ⬜   |
+| W8 | 面试与 Offer                        | —                                 | ⬜   |
 
 ## 目录
 
@@ -41,7 +41,7 @@ day17-starter/     LangChain 与 RAG 示例（只读）
 day18-starter/     W2 复盘
 ```
 
-> `day5`–`day18` 目录里是**学习卡与概念总结**（学什么、名词、坑、验收），实现代码当天自己写进去。
+> `day5`–`day18` 目录里是 **学习卡与概念总结**（学什么、名词、坑、验收），实现代码当天自己写进去。
 
 ## 技术栈
 
@@ -58,6 +58,9 @@ day18-starter/     W2 复盘
 cd day1-starter
 cp .env.example .env          # 填入 key
 docker compose up -d          # 起 pgvector
+set -a;
+source .env;                  # 需要在 day1-starter 中复制 .env.example 为 .env，并填入各项配置的对应值
+set +a;
 java HelloLLM.java            # 跑通流式调用
 ```
 
