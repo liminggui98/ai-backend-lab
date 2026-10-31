@@ -23,15 +23,6 @@
 | 百炼是**推理模型**：先流 `reasoning_content`，思考结束才流 `content`          | 它的「首 token」取决于思考长度，和另外两家不可比    |
 | 百炼空间级 key **必须配空间级域名**，混用返回 `403 AccessDenied.Unpurchased`  | `day1-starter/HelloLLM.java` 配置                   |
 | 首帧 `delta` 只带 `role`，`content` 是空串                                    | 用它算首 token 会把延迟算低，`LLMClient` 已跳过空帧 |
-
-Day 1 的基线（3次调用样本，波动大，仅供参考）：
-
-| provider | 模型           | 首 token    | 总耗时    |
-|----------|----------------|-------------|-----------|
-| DeepSeek | deepseek-flash | 0.36–0.98 s | 1.0–1.3 s |
-| 智谱     | glm-4-flash    | 1.4–1.6 s   | 2.3–3.1 s |
-| 百炼     | qwen3.7-plus   | 0.6–10.7 s  | 3.8–11 s  |
-
 ---
 
 ## A.计价：价目与成本结论

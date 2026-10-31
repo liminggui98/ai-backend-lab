@@ -126,7 +126,9 @@ public final class LLMClient {
          */
         public double tokensPerSecond() {
             long span = totalMs - firstTokenMs;
-            if (firstTokenMs < 0 || span <= 0 || usage.completionTokens() == 0) return 0;
+            if (firstTokenMs < 0 || span <= 0 || usage.completionTokens() == 0) {
+                return 0;
+            }
             return usage.completionTokens() * 1000.0 / span;
         }
     }
@@ -137,6 +139,8 @@ public final class LLMClient {
 
     public interface Provider {
         String name();
+
+        String model();
 
         /**
          * 非流式，返回完整答案。usage 最准，适合做成本核算。
@@ -174,6 +178,11 @@ public final class LLMClient {
         @Override
         public String name() {
             return name;
+        }
+
+        @Override
+        public String model() {
+            return model;
         }
 
         // ---------------- 非流式 ----------------
@@ -336,7 +345,7 @@ public final class LLMClient {
                         continue;
                     }
                     throw new IllegalStateException(
-                            "HTTP " + response.statusCode() + " @ " + name + "\n" + response.body());
+                            "HTTP " + response.statusCode() + " " + response.body());
                 } catch (IOException e) {
                     if (attempt < opts.maxRetries()) {
                         sleep(300L << attempt);
@@ -354,7 +363,7 @@ public final class LLMClient {
             StringBuilder body = new StringBuilder(256);
             body.append("{\"model\":").append(Json.quote(model));
             body.append(",\"stream\":").append(stream);
-            body.append(",\"stream_options\":").append(stream ? "{\"include_usage\": true}" : "{}");
+            body.append(stream ? ",\"stream_options\": {\"include_usage\": true}" : "");
             body.append(",\"temperature\":").append(opts.temperature());
             body.append(",\"max_tokens\":").append(opts.maxTokens());
             body.append(",\"messages\":[");
@@ -449,7 +458,7 @@ public final class LLMClient {
 
         System.out.printf("%-9s %-16s %9s %9s %16s %7s %9s%n",
                 "provider", "model", "首token", "总耗时", "tokens(p/c/t)", "tok/s", "answer");
-        System.out.println("-".repeat(72));
+        System.out.println("-".repeat(88));
 
         for (Provider provider : providers) {
             if (!"all".equals(wanted) && !wanted.equals(provider.name())) {
@@ -466,20 +475,16 @@ public final class LLMClient {
                         })
                         : provider.chat(messages, opts);
 
-                if (streaming) {
-                    System.out.println();
-                }
-
-                System.out.printf("%-9s %-16s %9s %9s %16s %7.1f %9s",
+                System.out.printf("%-9s %-16s %9s %9s %16s %s %9s%n",
                         reply.provider(),
                         reply.model(),
                         reply.firstTokenMs() < 0 ? "-" : reply.firstTokenMs() + "ms",
                         reply.totalMs() + "ms",
                         reply.usage().isEmpty() ? "-" : reply.usage().shortText(),
-                        reply.tokensPerSecond(),
-                        answer);
+                        streaming ? reply.tokensPerSecond() : "-",
+                        streaming ? answer : reply.text);
             } catch (RuntimeException e) {
-                System.out.printf("%-9s %-16s  ❌ %s%n", provider.name(), "-", e.getMessage().split("\n")[0]);
+                System.out.printf("%-9s %-16s ❌ %9s %16s %7s %9s%n", provider.name(), provider.model(), "-", "-", "-", e.getMessage());
             }
         }
     }
