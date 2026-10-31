@@ -130,7 +130,6 @@ public class HelloLLM {
         }
 
         double firstTokenTime = -1;
-        Pattern content = Pattern.compile("\"content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
         StringBuilder answer = new StringBuilder();
         StringBuilder usage = new StringBuilder();
         for (String line : (Iterable<String>) response.body()::iterator) {
@@ -144,7 +143,7 @@ public class HelloLLM {
                 break;
             }
 
-            Matcher m = content.matcher(data);
+            Matcher m = CONTEN_PATTERN.matcher(data);
             while (m.find()) {
                 String piece = unescape(m.group(1));
                 if (piece.isEmpty()) {
