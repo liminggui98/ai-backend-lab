@@ -8,13 +8,13 @@
 > 安装 Docker / OrbStack <br/>
 >
 > 起 pgvector 并验证 vector 扩展 <br/>
-> 
+>
 > 建 ai-backend-lab 仓库 <br/>
-> 
+>
 > 开 3 家 API（DeepSeek / 通义百炼 / 智谱），写统一调用脚本跑通流式输出 <br/>
-> 
+>
 > 读 OpenAI 兼容协议 <br/>
-> 
+>
 > 记 10 个不懂的概念 <br/>
 
 ## 1. 起数据库
@@ -35,40 +35,34 @@ docker exec -it pgvector psql -U postgres -d ai_lab -c "select note, embedding f
 ## 2. 跑第一次调用
 
 ```bash
-export DEEPSEEK_API_KEY=sk-xxx
+set -a
+source .env
+set +a
 java HelloLLM.java
 ```
 
 正常输出：
 
-```
-首 token 延迟：620 ms
+见 [HelloLLM 输出内容.txt](HelloLLM%20输出内容.txt)
 
-RAG 是先把相关资料检索出来、再交给大模型生成答案的技术方案。
+## 3. 数据记录
 
-总耗时：1.83 s，输出 42 字
-```
-
-## 3. 换 provider 试试
-
-同一份代码，只改环境变量：
-
-| provider         | LLM_BASE_URL                                                     | LLM_MODEL       | Key                  |
-|------------------|------------------------------------------------------------------|-----------------|----------------------|
-| DeepSeek         | `https://api.deepseek.com`                                       | `deepseek-flash` | `sk-`（平台自建）    |
-| 智谱             | `https://open.bigmodel.cn/api/paas/v4`                           | `glm-4-flash`   | `sk-`（免费额度）    |
-| 百炼（专属空间） | `https://ws-xxx.cn-xxx.maas.aliyuncs.com/compatible-mode/v1` | 以控制台为准    | `sk-ws-`（绑定空间） |
+| provider         | provider 使用的BASE_URL                                      | provider 使用 MODEL | provider 对应的 API_KEY 形式 |
+|------------------|--------------------------------------------------------------|---------------------|------------------------------|
+| DeepSeek         | `https://api.deepseek.com`                                   | `deepseek-flash`    | `sk-`（平台自建）            |
+| 智谱             | `https://open.bigmodel.cn/api/paas/v4`                       | `glm-4-flash`       | `sk-`（免费额度）            |
+| 百炼（专属空间） | `https://ws-xxx.cn-xxx.maas.aliyuncs.com/compatible-mode/v1` | 以控制台为准        | `sk-ws-`（绑定空间）         |
 
 > 百炼的 DashScope 公共域名（`dashscope.aliyuncs.com`）自 2026-09-30 起进入维护期，新业务走专属空间域名。
 > 空间级 key 必须配空间级域名，混用会返回 `403 AccessDenied.Unpurchased`。
 
 三家都跑通后，把首 token 延迟填进下面这张表——这是 W1 参数实验的基线。
 
-| provider | 模型          | 首 token    | 总耗时    |
-|----------|---------------|-------------|-----------|
+| provider | 模型           | 首 token    | 总耗时    |
+|----------|----------------|-------------|-----------|
 | DeepSeek | deepseek-flash | 0.36–0.98 s | 1.0–1.3 s |
-| 智谱     | glm-4-flash   | 1.4–1.6 s   | 2.3–3.1 s |
-| 百炼     | qwen3.7-plus  | 0.6–10.7 s  | 3.8–11 s  |
+| 智谱     | glm-4-flash    | 1.4–1.6 s   | 2.3–3.1 s |
+| 百炼     | qwen3.7-plus   | 0.6–10.7 s  | 3.8–11 s  |
 
 ## 常见报错
 

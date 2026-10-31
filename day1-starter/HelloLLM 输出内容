@@ -1,0 +1,318 @@
+---模型商：DeepSeek，模型：deepseek-flash，非流式输出---
+request: https://api.deepseek.com/chat/completions POST
+payload: {
+  "model": "deepseek-flash",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是让大模型在回答前先从外部知识库检索相关内容、再结合检索结果生成答案的技术，可提升准确性并减少幻觉。
+usage: {"prompt_tokens":47,"completion_tokens":60,"total_tokens":107,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":23},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
+total: 1.29 s 
+
+---模型商：DeepSeek，模型：deepseek-flash，流式输出---
+request: https://api.deepseek.com/chat/completions POST
+payload: {
+  "model": "deepseek-flash",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是指模型在生成回答前先从外部知识库检索相关信息，再结合这些信息生成更准确、可溯源答案的技术。
+firstToken: 991.65 ms
+usage: {"prompt_tokens":47,"completion_tokens":75,"total_tokens":122,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":41},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
+total: 1.25 s 
+
+---模型商：百炼，模型：qwen3.7-plus，非流式输出---
+request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
+payload: {
+  "model": "qwen3.7-plus",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是一种在生成回答前先从外部知识库检索相关信息，并将其作为上下文输入给大语言模型，从而提高回答准确性和时效性的技术。
+usage: {"prompt_tokens":31,"total_tokens":231,"completion_tokens":200,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":163,"text_tokens":200}}
+total: 3.89 s 
+
+---模型商：百炼，模型：qwen3.7-plus，流式输出---
+request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
+payload: {
+  "model": "qwen3.7-plus",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是一种通过先从外部知识库检索相关信息，再将其作为上下文输入给大语言模型，从而生成更准确、实时回答的技术。
+firstToken: 3351.56 ms
+usage: {"prompt_tokens":31,"total_tokens":233,"completion_tokens":202,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":165,"text_tokens":202}}
+total: 3.83 s 
+
+---模型商：智谱，模型：glm-4-flash，非流式输出---
+request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
+payload: {
+  "model": "glm-4-flash",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG是Retrieval-Augmented Generation的缩写，指的是一种通过检索外部信息来增强生成式模型输出的技术。
+usage: {"completion_tokens":29,"prompt_tokens":24,"total_tokens":53}
+total: 1.75 s 
+
+---模型商：智谱，模型：glm-4-flash，流式输出---
+request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
+payload: {
+  "model": "glm-4-flash",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG是检索-摘要-排名（Retrieval-Aggregation-Generation）的缩写，是一种用于生成式AI模型的技术，用于从大量数据中检索信息、汇总并生成新的内容。
+firstToken: 561.22 ms
+usage: {"prompt_tokens":24,"completion_tokens":46,"total_tokens":70}
+total: 2.57 s 
+
+
+---模型商：DeepSeek，模型：deepseek-flash，非流式输出---
+request: https://api.deepseek.com/chat/completions POST
+payload: {
+  "model": "deepseek-flash",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是指在大模型生成回答前，先从外部知识库检索相关文档并注入上下文，从而让回答更准确、可溯源。
+usage: {"prompt_tokens":47,"completion_tokens":68,"total_tokens":115,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":33},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
+total: 1.53 s
+
+---模型商：DeepSeek，模型：deepseek-flash，流式输出---
+request: https://api.deepseek.com/chat/completions POST
+payload: {
+  "model": "deepseek-flash",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是让大模型在回答前先从外部知识库检索相关信息，再基于检索结果生成回答的技术。
+firstToken: 1026.28 ms
+usage: {"prompt_tokens":47,"completion_tokens":74,"total_tokens":121,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":44},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
+total: 1.15 s
+
+---模型商：百炼，模型：qwen3.7-plus，非流式输出---
+request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
+payload: {
+  "model": "qwen3.7-plus",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是一种将信息检索与大语言模型结合的技术，通过先从外部知识库检索相关上下文，来增强模型回答的准确性并减少幻觉。
+usage: {"prompt_tokens":31,"total_tokens":284,"completion_tokens":253,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":215,"text_tokens":253}}
+total: 4.78 s
+
+---模型商：百炼，模型：qwen3.7-plus，流式输出---
+request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
+payload: {
+  "model": "qwen3.7-plus",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是一种通过先从外部知识库检索相关信息，再将其作为上下文输入给大语言模型，从而生成更准确、实时回答的技术。
+firstToken: 3368.76 ms
+usage: {"prompt_tokens":31,"total_tokens":240,"completion_tokens":209,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":172,"text_tokens":209}}
+total: 3.87 s
+
+---模型商：智谱，模型：glm-4-flash，非流式输出---
+request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
+payload: {
+  "model": "glm-4-flash",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG是Retrieval-Augmented Generation的缩写，指的是通过检索外部信息来增强生成式模型的生成能力。
+usage: {"completion_tokens":28,"prompt_tokens":24,"total_tokens":52}
+total: 1.29 s
+
+---模型商：智谱，模型：glm-4-flash，流式输出---
+request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
+payload: {
+  "model": "glm-4-flash",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG是“检索-摘要-生成”的缩写，是一种用于问答系统的技术，通过检索相关文档，生成问题的答案摘要。
+firstToken: 465.46 ms
+usage: {"prompt_tokens":24,"completion_tokens":32,"total_tokens":56}
+total: 1.07 s
+
+
+
+
+---模型商：DeepSeek，模型：deepseek-flash，非流式输出---
+request: https://api.deepseek.com/chat/completions POST
+payload: {
+  "model": "deepseek-flash",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是在大模型生成回答前，先从外部知识库检索相关文档并将其作为上下文输入，从而提升回答准确性和时效性的技术。
+usage: {"prompt_tokens":47,"completion_tokens":87,"total_tokens":134,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":51},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
+total: 1.74 s
+
+---模型商：DeepSeek，模型：deepseek-flash，流式输出---
+request: https://api.deepseek.com/chat/completions POST
+payload: {
+  "model": "deepseek-flash",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是让大模型在回答前先从外部知识库检索相关资料，再结合检索内容生成回答的技术，能提升准确性并减少幻觉。
+firstToken: 660.55 ms
+usage: {"prompt_tokens":47,"completion_tokens":57,"total_tokens":104,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":20},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
+total: 0.87 s
+
+---模型商：百炼，模型：qwen3.7-plus，非流式输出---
+request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
+payload: {
+  "model": "qwen3.7-plus",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是一种在生成回答前先从外部知识库检索相关信息，并将其作为上下文输入给大语言模型，从而提升回答准确性和时效性的技术。
+usage: {"prompt_tokens":31,"total_tokens":241,"completion_tokens":210,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":172,"text_tokens":210}}
+total: 3.97 s
+
+---模型商：百炼，模型：qwen3.7-plus，流式输出---
+request: https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions POST
+payload: {
+  "model": "qwen3.7-plus",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG（检索增强生成）是一种通过在生成回答前先从外部知识库检索相关信息来为大语言模型提供上下文的技术，从而有效提升输出的准确性并减少幻觉。
+firstToken: 4287.01 ms
+usage: {"prompt_tokens":31,"total_tokens":299,"completion_tokens":268,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":232,"text_tokens":268}}
+total: 4.77 s
+
+---模型商：智谱，模型：glm-4-flash，非流式输出---
+request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
+payload: {
+  "model": "glm-4-flash",
+  "stream": false,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG是检索-摘要-排名（Retrieval-Aggregation-Generation）的缩写，是一种用于生成式AI模型的技术，用于检索相关信息、聚合数据并生成文本。
+usage: {"completion_tokens":42,"prompt_tokens":24,"total_tokens":66}
+total: 2.09 s
+
+---模型商：智谱，模型：glm-4-flash，流式输出---
+request: https://open.bigmodel.cn/api/paas/v4/chat/completions POST
+payload: {
+  "model": "glm-4-flash",
+  "stream": true,
+  "max_tokens": 1024,
+  "temperature": 0.3,
+  "messages": [
+    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
+    {"role": "user", "content": "用一句话解释什么是 RAG"}
+  ]
+}
+
+answer: RAG是Retrieval-Augmented Generation的缩写，指的是通过检索外部信息来增强生成式模型的生成能力。
+firstToken: 721.71 ms
+usage: {"prompt_tokens":24,"completion_tokens":28,"total_tokens":52}
+total: 1.72 s

@@ -34,13 +34,13 @@ public class HelloLLM {
                 throw new IllegalArgumentException("providerName cannot be blank");
             }
             if (model == null || model.isBlank()) {
-                throw new IllegalArgumentException("model cannot be blank");
+                throw new IllegalArgumentException("%s model cannot be blank".formatted(providerName));
             }
             if (baseUrl == null || baseUrl.isBlank()) {
-                throw new IllegalArgumentException("baseUrl cannot be blank");
+                throw new IllegalArgumentException("%s baseUrl cannot be blank".formatted(providerName));
             }
             if (apiKey == null || apiKey.isBlank()) {
-                throw new IllegalArgumentException("apiKey cannot be blank");
+                throw new IllegalArgumentException("%s apiKey cannot be blank".formatted(providerName));
             }
         }
     }

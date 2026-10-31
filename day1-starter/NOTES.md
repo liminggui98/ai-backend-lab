@@ -2,15 +2,21 @@
 
 ## 一、跑通了什么
 
-| 项                | 结果                            | 怎么验证的                                                                                    |
-|-------------------|---------------------------------|-----------------------------------------------------------------------------------------------|
-| Docker + pgvector | ✅ pg16，vector 0.8.7           | `select * from healthcheck;` 有 1 行                                                          |
-| DeepSeek 流式     | ✅ deepseek-flash               | 注入环境变量 `DEEPSEEK_API_KEY`，<br/>运行 [HelloLLM.java](HelloLLM.java)                     |
-| 智谱流式          | ✅ glm-4-flash                  | 注入 `ZHIPU_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java)   |
-| 百炼流式          | ✅ qwen3.7-plus（专属空间域名） | 注入 `BAILIAN_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java) |
-| 仓库提交          | ✅ ai-backend-lab               | github `ai-backend-lab` 有代码，可访问                                                        |
+> 运行 `HelloLLM.java` 前，复制 [.env.example](../day1-starter/.env.example) 为 .env，修改各模型对应的
+> API_KEY（百炼需修改BASE_URL与API_KEY对应）。通过命令 `set -a; source .env; set +a;` 生效环境变量，在同一终端下运行
+> `java HelloLLM.java` 即可;
+
+| 项                | 结果                            | 怎么验证的                             |
+|-------------------|---------------------------------|----------------------------------------|
+| Docker + pgvector | ✅ pg16，vector 0.8.7           | `select * from healthcheck;` 有 1 行   |
+| DeepSeek 流式     | ✅ deepseek-flash               | 运行 [HelloLLM.java](HelloLLM.java)    |
+| 智谱流式          | ✅ glm-4-flash                  | 运行 [HelloLLM.java](HelloLLM.java)    |
+| 百炼流式          | ✅ qwen3.7-plus（专属空间域名） | 运行 [HelloLLM.java](HelloLLM.java)    |
+| 仓库提交          | ✅ ai-backend-lab               | github `ai-backend-lab` 有代码，可访问 |
 
 代码在 [HelloLLM.java](HelloLLM.java)：零依赖，只用 JDK 21 的 `HttpClient` + `BodyHandlers.ofLines()`。
+
+代码输出内容在 [HelloLLM 输出内容.txt](HelloLLM%20输出内容)
 
 百炼只支持空间域名访问。
 
