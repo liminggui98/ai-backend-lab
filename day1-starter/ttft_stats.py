@@ -5,15 +5,16 @@
   数据文件默认取脚本同目录下的 `HelloLLM 输出内容.txt`
 
 输出：按 provider/model 分组，只统计"是否流式=是"的行，
-      计算首 token 的平均值、P50、P90（统一毫秒）。
+      分别计算首 token 与总耗时的平均值、P50、P90（统一毫秒）。
 """
 import statistics
 import sys
 from pathlib import Path
 
 # 数据行按空白切分后的列索引
-COL_PROVIDER, COL_MODEL, COL_STREAM, COL_FIRST_TOKEN = 0, 1, 2, 3
+COL_PROVIDER, COL_MODEL, COL_STREAM, COL_FIRST_TOKEN, COL_TOTAL = 0, 1, 2, 3, 4
 HEADER_LINES = 2  # 表头 + 分隔线
+METRICS = [("first", "首 token"), ("total", "总耗时")]
 
 
 def parse_ms(text):
@@ -40,7 +41,7 @@ def percentile(sorted_values, p):
 
 
 def collect(path):
-    """解析文件，返回 {模式: [首token ms, ...]}，只保留流式且首 token 有效的行。"""
+    """解析文件，返回 {模式: {first: [ms], total: [ms]}}，只保留流式且数值有效的行。"""
     groups = {}
     for line in path.read_text(encoding="utf-8").splitlines()[HEADER_LINES:]:
         cols = line.split()
@@ -48,22 +49,29 @@ def collect(path):
             continue
         if cols[COL_STREAM] != "是":
             continue
-        ms = parse_ms(cols[COL_FIRST_TOKEN])
-        if ms is None:
+        first = parse_ms(cols[COL_FIRST_TOKEN])
+        total = parse_ms(cols[COL_TOTAL])
+        if first is None or total is None:
             continue
-        groups.setdefault(f"{cols[COL_PROVIDER]}/{cols[COL_MODEL]}", []).append(ms)
+        data = groups.setdefault(f"{cols[COL_PROVIDER]}/{cols[COL_MODEL]}", {})
+        data.setdefault("first", []).append(first)
+        data.setdefault("total", []).append(total)
     return groups
 
 
 def render(groups):
-    out = ["| 模式 | 样本数 | 平均 (ms) | P50 (ms) | P90 (ms) |",
-           "| --- | --- | --- | --- | --- |"]
-    for mode, values in sorted(groups.items()):
-        values.sort()
-        out.append(
-            f"| {mode} | {len(values)} | {statistics.mean(values):.1f} "
-            f"| {percentile(values, 50):.1f} | {percentile(values, 90):.1f} |"
-        )
+    out = []
+    for key, label in METRICS:
+        out.append(f"## {label} (ms)")
+        out.append("| 模式 | 样本数 | 平均 | P50 | P90 |")
+        out.append("| --- | --- | --- | --- | --- |")
+        for mode, data in sorted(groups.items()):
+            values = sorted(data[key])
+            out.append(
+                f"| {mode} | {len(values)} | {statistics.mean(values):.1f} "
+                f"| {percentile(values, 50):.1f} | {percentile(values, 90):.1f} |"
+            )
+        out.append("")
     return "\n".join(out)
 
 
