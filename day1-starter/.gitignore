@@ -1,5 +1,0 @@
-.env
-pgdata/
-*.class
-.idea/
-*.log

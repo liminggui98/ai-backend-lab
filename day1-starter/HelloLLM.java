@@ -21,15 +21,18 @@ import java.util.stream.Stream;
  * 智谱      : https://open.bigmodel.cn/api/paas/v4        glm-4-flash
  */
 public class HelloLLM {
-
     static final String BASE_URL = env("LLM_BASE_URL", "https://api.deepseek.com");
+
     static final String MODEL = env("LLM_MODEL", "deepseek-chat");
+
     static final String API_KEY = firstNonBlank(
             System.getenv("LLM_API_KEY"),
             System.getenv("DEEPSEEK_API_KEY"),
-            System.getenv("DASHSCOPE_API_KEY"),
+            System.getenv("BAILIAN_API_KEY"),
             System.getenv("ZHIPU_API_KEY"));
+
     static final boolean STREAM = !"false".equalsIgnoreCase(env("LLM_STREAM", "true"));
+
     static final String MAX_TOKENS = env("LLM_MAX_TOKENS", "1024");   // 有默认值，永远有字段
 
     public static void main(String[] args) throws Exception {

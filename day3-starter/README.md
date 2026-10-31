@@ -1,3 +1,15 @@
+---
+day: 3
+plan_date: 2026-10-31
+date: 2026-10-29
+week: W0
+theme: 三家 API 对比、LLMClient 统一封装、GitHub 骨架
+status: 进行中            # 还差 3 项实测：DeepSeek 并行 tool_calls / 智谱 2 格 / C3 三项
+spent_h:
+deliverable: API对比表.md + LLMClient.java + 主页与 3 个仓库
+commit: 1eece80
+---
+
 # Day 3 Starter（10/31）
 
 > 当天交付：**三家 API 对比表 + `LLMClient.java`（多 provider 统一封装）+ GitHub 主页**。

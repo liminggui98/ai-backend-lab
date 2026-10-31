@@ -39,7 +39,7 @@ PROVIDERS = [
     # 名字, key 环境变量（按序取第一个有值的）, base_url, model
     ("DeepSeek", ["DEEPSEEK_API_KEY"], "https://api.deepseek.com", "deepseek-chat"),
     ("智谱", ["ZHIPU_API_KEY"], "https://open.bigmodel.cn/api/paas/v4", "glm-4-flash"),
-    ("百炼", ["BAILIAN_API_KEY", "DASHSCOPE_API_KEY"],
+    ("百炼", ["BAILIAN_API_KEY"],
      "https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1", "qwen3.7-plus"),
 ]
 

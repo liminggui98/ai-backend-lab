@@ -1,3 +1,15 @@
+---
+day: 5
+plan_date: 2026-11-02
+date: 2026-10-30          # 提前 3 天
+week: W1
+theme: Java 21 新语法与边界
+status: 已完成
+spent_h: 3.5
+deliverable: Day5Starter.java 四段练习（record / sealed / 模式匹配 / 文本块）
+commit: f572595
+---
+
 # Day 5 · 11/02 周一 · Java 21：新语法与边界
 
 > **状态：已完成**（实际执行 2026-10-30，比计划提前 3 天）　·　实现：[Day5Starter.java](Day5Starter.java)（284 行）　·　提交：`f572595`

@@ -1,135 +1,364 @@
-# Day 1 学习笔记
-
-> 计划 10/29，实际 10/28 提前做完。今天只做一件事：不开框架，用 JDK 自带的 `HttpClient` 把一次流式调用拆开看清楚。
-> 进度：环境 ✅　·　三家 provider ✅　·　10 个问题已列并猜完（10/10），答案见第九节
+# 学习笔记
 
 ## 一、跑通了什么
 
-| 项 | 结果 | 怎么验证的 |
-| --- | --- | --- |
-| Docker + pgvector | ✅ pg16，vector 0.8.7 | `select * from healthcheck;` 有 1 行 |
-| DeepSeek 流式 | ✅ | `java HelloLLM.java` |
-| 智谱流式 | ✅ glm-4-flash | 换 `LLM_BASE_URL` / `LLM_MODEL` |
-| 百炼流式 | ✅ qwen3.7-plus（专属空间域名） | 空间级 key 必须配空间级域名 |
-| 仓库提交 | ✅ ai-backend-lab | 4 个 commit |
+| 项                | 结果                            | 怎么验证的                                                                                  |
+|-------------------|---------------------------------|---------------------------------------------------------------------------------------------|
+| Docker + pgvector | ✅ pg16，vector 0.8.7           | `select * from healthcheck;` 有 1 行                                                        |
+| DeepSeek 流式     | ✅ deepseek-flash               | 注入环境变量 `DEEPSEEK_API_KEY`，<br/>运行 [HelloLLM.java](HelloLLM.java)                   |
+| 智谱流式          | ✅ glm-4-flash                  | 注入 `ZHIPU_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java) |
+| 百炼流式          | ✅ qwen3.7-plus（专属空间域名） | 注入 `ZHIPU_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，<br/>运行 [HelloLLM.java](HelloLLM.java) |
+| 仓库提交          | ✅ ai-backend-lab               | github `ai-backend-lib` 有代码，可访问                                                      |
 
 代码在 [HelloLLM.java](HelloLLM.java)：零依赖，只用 JDK 21 的 `HttpClient` + `BodyHandlers.ofLines()`。
 
-## 二、实测数据（2026-10-28，JDK 21，本机）
+百炼只支持空间域名访问。
 
-| provider | 模型 | 首 token | 总耗时 |
-| --- | --- | --- | --- |
+## 二、实测数据
+
+环境参考 [环境清单.md](环境清单.md)
+
+| provider | 模型          | 首 token    | 总耗时    |
+|----------|---------------|-------------|-----------|
 | DeepSeek | deepseek-chat | 0.36–0.98 s | 1.0–1.3 s |
-| 智谱 | glm-4-flash | 1.4–1.6 s | 2.3–3.1 s |
-| 百炼 | qwen3.7-plus | 0.6–10.7 s | 3.8–11 s |
+| 智谱     | glm-4-flash   | 1.4–1.6 s   | 2.3–3.1 s |
+| 百炼     | qwen3.7-plus  | 0.6–10.7 s  | 3.8–11 s  |
 
-两次测量差异就不小，**单次数字不可信，要取 3 次中位数**。这组数就是 W1 参数实验的基线。
+差异：
 
-两个必须记住的差异：
-
-- `deepseek-chat` 是别名，响应里回来的 `model` 是 `deepseek-flash`。模型名会漂，指标表要记「实际返回的 model」。
 - 百炼是推理模型：先流 `reasoning_content`、思考结束才流 `content`。它的「首 token」取决于思考长度，和另外两家不可比。
 
 ## 三、今天亲眼确认的 4 个事实
 
-1. 流式每一帧都是 `chat.completion.chunk`，增量在 `choices[0].delta`；非流式的答案在 `choices[0].message.content`。两者结构不同，不能拿同一套解析。
+1. 流式每一帧都是 `chat.completion.chunk`，增量在 `choices[0].delta`；非流式的答案在 `choices[0].message.content`
+   。两者结构不同，不能拿同一套解析。
 2. 第一帧的 `delta` 只带 `role`，`content` 是空字符串。用它算首 token，延迟会被低估。
-3. 同一份请求，换 `LLM_BASE_URL` + `LLM_MODEL` + key 就能切 provider——OpenAI 兼容协议确实能抹平三家差异。
-4. 推理模型的 `delta` 里，`reasoning_content` 和 `content` 可以同时出现，只是其中一个是空串。
+3. 推理模型的 `delta` 里，`reasoning_content` 和 `content` 可以同时出现，只是其中一个是空串。
 
-## 四、十个问题（先写下来，不查；W1 逐个解决）
+## 四、OpenAI 兼容协议
 
-每一条后面补一句「我猜是……」，猜错没关系——猜过再看答案，记得更牢。
+[OpenAI兼容协议.md](OpenAI兼容协议.md)
 
-1. 一次请求最少要传哪两个字段？
-   - 我猜是：用户输入信息、选用模型
+## 五、十个问题
 
-2. `messages` 里 `system` / `user` / `assistant` 三种角色，分别是谁在说话？
-   - 我猜是：system 设置系统角色，user 是进行输入的用户，assistant 是协助模型进行处理的工具
+### 1. 一次请求最少要传哪两个字段？
 
-3. 非流式响应里，答案藏在哪个路径？
-   - 我猜是：content
+字段名是 `model` 与 `messages`。除此之外的字段全都有默认值，可以一个都不传。
 
-4. `finish_reason` 有哪几种值？`length` 代表什么？
-   - 我猜是：finish_reason 具体不知道，length 表示返回的文本长度
+最小可用请求体：
 
-5. `usage` 的三个数字，哪个决定你付多少钱？
-   - 我猜是：usage 三个数字不清楚，付多少钱主要看消耗了多少 token
+```json
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "user",
+      "content": "你好"
+    }
+  ]
+}
+```
 
-6. 流式响应每行都以 `data: ` 开头，这个格式是谁定的？为什么不是直接返回 JSON 数组？
-   - 我猜是：请求里字段定的，返回 json 数组消耗 token 过多
+三个容易踩的边界：
 
-7. 最后那行 `data: [DONE]` 是模型发出的，还是网关发出的？
-   - 我猜是：网关
+| 约束                         | 说明                                                        |
+|------------------------------|-------------------------------------------------------------|
+| `messages` 不能为空数组      | 至少 1 条；空数组通常返回 400                               |
+| 每条消息必须有 `role`        | `content` 视角色而定，`assistant` 在纯工具调用时可为 `null` |
+| `model` 是"模型 ID / 部署名" | Azure 走 `deployments/{deployment}`，`model` 字段可被忽略   |
 
-8. `temperature` 和 `top_p` 为什么通常只调一个？
-   - 我猜是：只会有一个生效
+> 常见误区：以为 `temperature`、`max_tokens`、`stream` 是必填。它们都有默认值（`1`、`null`、`false`），只是生产环境通常显式指定以便复现。
 
-9. 同一句话，中文为什么比英文更费 token？
-   - 我猜是：存储方式不同，中文占更多空间
+---
 
-10. 上下文窗口超了会发生什么，报错还是截断？
-    - 我猜是：截断
+### 2. `system` / `user` / `assistant` 分别是谁在说话？
 
-## 五、读文档的顺序（DeepSeek 接口文档）
+**先记住一个前提**：`messages` 里的每一条 **都是客户端发上去的**。服务端不保存会话，role
+描述的是"这段话的署名与责任方"，不是运行时的系统组件。
 
-<https://api-docs.deepseek.com/zh-cn/api/create-chat-completion>
+| 角色        | 谁写的                           | 作用                                    | 常见误解                              |
+|-------------|----------------------------------|-----------------------------------------|---------------------------------------|
+| `system`    | 应用开发者                       | 设定人设、规则、边界；优先级高于 `user` | 不是"操作系统角色"，也不是运行时开关  |
+| `user`      | 终端用户                         | 本轮输入，可带图片/音频/文件            | —                                     |
+| `assistant` | **模型自己**（由客户端回填历史） | 表示"这是模型此前说过的话"              | ❌ 不是工具、不是中间件、不"协助"模型 |
 
-| 部分     | 看什么                                                                               | 时间   |
-| ------ | --------------------------------------------------------------------------------- | ---- |
-| 请求体字段表 | `model` / `messages` / `stream` / `temperature` / `top_p` / `max_tokens` / `stop` | 5 分钟 |
-| 响应对象   | `choices[].message.content`、`finish_reason`、`usage`                               | 3 分钟 |
-| 流式说明   | 为什么每行是 `data: {...}`、最后为什么有 `[DONE]`                                              | 4 分钟 |
-| 错误码    | 429 / 401 / 400 分别代表什么                                                            | 3 分钟 |
+---
 
-## 六、今天踩过的坑
+### 3. 非流式响应里，答案藏在哪个路径？
 
-- **`.env` 三段 `LLM_*` 全开**：`source .env` 之后最后一段（百炼）生效，以为在测 DeepSeek 其实打的是百炼。要么注释掉没用的两段，要么命令行显式覆盖。
-- **body 流没有超时**：`HttpRequest.timeout` 只覆盖到响应头，流式读到一半没数据会一直挂着。百炼那次就卡了两分钟，只能 Ctrl+C。
-- **空 `content` 帧**：第一帧 `content` 是 `""`，原来的代码把它算成首 token，延迟偏低（已修）。
+```text
+choices[1,...,n-1].message.content
+```
 
-## 七、Day 2 衔接
+- `n > 1` 时按 `choices[i].index` 取，不能默认只有一条；
+- `content` 可能为 `null`（纯工具调用），此时答案在 `message.tool_calls`；
+- 模型拒答时看 `message.refusal`；
+- 流式响应里对应的是 `choices[0].delta.content`，不是 `message`；
+- 旧版 `/v1/completions` 才是 `choices[0].text`，别和 Chat Completions 混用。
 
-- 上午：读 31 份北京 AI 应用后端 JD，填台账的「JD词频」sheet
-- 下午：过一遍 60 家公司池，填「优先级」，选出最想去的 10 家
-- 晚上：简历 v1（如实写，先不改）
+```python
+resp = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "你好"}],
+)
+print(resp.choices[0].message.content)  # 原始 JSON 即 choices[0].message.content
+```
 
-## 八、今天的一句话
+> 网关差异：部分兼容网关会把整个响应再包一层（如 `{"data": {...}}`），或直接返回 SDK 对象。定位时先打印顶层键，再按
+> `choices → 0 → message → content` 下钻。
 
-今日完成了环境安装及 OpenAI 协议基础阅读，还把 pgvector 和三家模型的流式调用跑通了；
+---
 
-## 九、答案与纠正（2026-10-29）
+### 4. `finish_reason` 有哪几种值？`length` 代表什么？
 
-> 10 条全部猜完：**2 条全对、4 条半对、4 条要改**。错的集中在「协议 / 采样 / 上下文」三类，W1 会逐个撞上。
+**标准取值（OpenAI Chat Completions）**：
 
-| # | 判定 | 答案 / 纠正 |
-| --- | --- | --- |
-| 1 | ✅ | `model` + `messages` 必填；`stream`、`temperature` 等可选 |
-| 2 | 🟡 | `system` = 开发者指令 / 人设，`user` = 用户输入，`assistant` = **模型自己的回复**（可含 `tool_calls`）；工具结果走 `tool` 角色 |
-| 3 | 🟡 | 非流式完整路径：`choices[0].message.content`（不只是 `content`） |
-| 4 | ❌ | 常见值：`stop` / `length` / `content_filter` / `tool_calls`；`length` = **达到 `max_tokens` 被截断**，不是文本长度 |
-| 5 | 🟡 | `usage` = `prompt_tokens` + `completion_tokens` + `total_tokens`；输入 / 输出**分别计价**（输出更贵），`total` 只是合计；DeepSeek 输入还分缓存命中 / 未命中 |
-| 6 | ❌ | `data: ...` 是 **SSE**（Server-Sent Events，`Content-Type: text/event-stream`）协议，不是请求字段决定的；不用 JSON 数组是为了增量到达、边生成边解析，不是省 token |
-| 7 | ✅ | `[DONE]` 是服务端 / 兼容层发出的哨兵，模型不发（严格说不是「网关」这个组件，而是 API 服务端的流式实现） |
-| 8 | ❌ | 不是「只有一个生效」：`temperature` 缩放 logits、`top_p` 做核采样截断，**两者都会作用**；叠加后难归因，所以建议只调一个 |
-| 9 | 🟡 | 是 BPE tokenizer 对中文切分更碎（1 个汉字常 1–2 token），不是「存储方式」；英文常见词多是一个 token |
-| 10 | 🟡 | 两家行为不同：DeepSeek 文档口径是 400 报错；实测智谱 glm-4-flash 返回 200 但 prompt_tokens 恒为 131071（静默截断）。→ 不能靠 provider 报错，必须本地算 token |
+| 值               | 含义                                                                                       | 客户端该做什么                                    |
+|------------------|--------------------------------------------------------------------------------------------|---------------------------------------------------|
+| `stop`           | 模型自然结束，或命中 `stop` 序列                                                           | 正常消费                                          |
+| `length`         | **token 预算耗尽**：达到 `max_tokens` / `max_completion_tokens`，或输入+输出触顶上下文窗口 | 内容不完整；别直接 `JSON.parse`，可提高上限或续写 |
+| `tool_calls`     | 模型发起工具调用                                                                           | 执行工具并回填 `tool` 消息                        |
+| `content_filter` | 被内容安全策略拦截，内容可能为空                                                           | 提示用户，不要原样重试                            |
+| `function_call`  | 旧版函数调用，**已废弃**                                                                   | 迁移到 `tool_calls`                               |
 
-### 2026-10-30 用 HelloLLM 非流式验证（#3 / #4 / #5）
+**`length` 不是"文本长度"**，而是"**token 预算用尽**"：模型不是算到某个字数停的，是生成预算或上下文额度到顶被硬停。典型表现：句子说一半、JSON
+不闭合、代码截断。
 
-- **#3 路径**：非流式答案只在 `choices[0].message.content`，没有 `delta`；`finish_reason=stop`。
-- **#4 截断**：`max_tokens=5` → HTTP 200 + `finish_reason=length` + `content="RAG（检索增强"`（半句），`completion_tokens=5`。
-  与「上下文超限」的区别：后者是 **400 报错**，前者是**正常返回被截断**。
-- **#5 计费**：`prompt=22 / completion=40 / total=62`，`prompt_cache_hit_tokens=0`。
-  高峰 `(22×2 + 40×8)/1e6 = ¥0.000364`，千次 ¥0.364；空闲 ¥0.000182。
-  输出占这次费用的 **88%**（320/364）。
+```json
+{
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "综上所述，闭包是指函数与其词法环境的组合，因"
+      },
+      "finish_reason": "length"
+    }
+  ]
+}
+```
 
-**两个新发现**：
-1. 同一 prompt 连跑两次 `cached_tokens` 都是 0 —— 缓存按 64 token 一块对齐，22 token 未达粒度。
-   → 修正 Day 3 结论：前缀要**够长（≥64 token）**才进缓存，不是「固定前缀就一定命中」。
-2. 用正则 `[^}]*` 抠 usage 会在 `prompt_tokens_details` 的内层 `}` 处截断 ——
-   改用括号配平的 `jsonObjectAfter()`。这是 Day 3 `LLMClient` 要写真正解析器的原因。
+**厂商扩展值**（兼容层可能透出，务必加兜底分支）：
 
-### 一句话记住
+| 实现                    | 额外取值                                                                            |
+|-------------------------|-------------------------------------------------------------------------------------|
+| DeepSeek                | `insufficient_system_resource`（系统资源不足）                                      |
+| vLLM                    | `abort`（请求被中止）                                                               |
+| Anthropic（若走兼容层） | `end_turn` / `max_tokens` / `stop_sequence` / `tool_use` / `pause_turn` / `refusal` |
+| Gemini                  | `STOP` / `MAX_TOKENS` / `SAFETY` / `RECITATION` / `OTHER` 等                        |
 
-`finish_reason=length` 是「被 max_tokens 截断」，上下文超限是「400 报错」，SSE 的 `[DONE]` 是服务端哨兵——三个都跟「结束」有关，但不是一个东西。
+> 判定规则：`finish_reason` 非 `null` 只代表 **某个 choice** 结束；整个流是否完整仍以 `data: [DONE]` 为准。
+
+---
+
+### 5. `usage` 的三个数字，哪个决定你付多少钱？
+
+**三个数字**：
+
+| 字段                | 含义                                           |
+|---------------------|------------------------------------------------|
+| `prompt_tokens`     | 输入 token 数（系统提示 + 历史 + 本轮输入）    |
+| `completion_tokens` | 输出 token 数（含推理模型的 reasoning tokens） |
+| `total_tokens`      | 前两者之和                                     |
+
+**计费公式**（单价因模型而异）：
+
+```text
+费用 = prompt_tokens     / 1,000,000 × 输入单价
+     + completion_tokens / 1,000,000 × 输出单价
+```
+
+**`total_tokens` 只是和，不直接参与计费。** 输入和输出单价不同，输出通常贵数倍（常见 2–4 倍），所以"输入 10 万 token"和"输出
+10 万 token"价钱差很多。
+
+举例（假设输入 $0.15/M、输出 $0.60/M）：
+
+```text
+prompt_tokens = 1200  → 1200 / 1e6 × 0.15 = $0.00018
+completion_tokens = 800 → 800 / 1e6 × 0.60 = $0.00048
+合计 ≈ $0.00066
+```
+
+再叠加四个变量：
+
+| 变量       | 影响                                                                |
+|------------|---------------------------------------------------------------------|
+| 缓存命中   | `prompt_tokens_details.cached_tokens` 通常按输入价的 10%–50% 计费   |
+| 推理 token | `completion_tokens_details.reasoning_tokens` 计入输出，按输出价计费 |
+| `n > 1`    | 每个候选都产生 completion tokens，全部计费                          |
+| 流式       | 必须 `stream_options.include_usage: true` 才拿得到 `usage`          |
+
+> 结论： **输入和输出各算各的**；`total_tokens` 只用于展示和限额，不要拿它乘单价。
+
+---
+
+### 6. 流式响应每行 `data: ` 是谁定的？为什么不是直接返回 JSON 数组？
+
+**格式是谁定的**：SSE（Server-Sent Events），由 WHATWG 的 HTML Living Standard 定义，媒体类型 `text/event-stream`。
+`stream: true` 只是让服务端 **切换到流式模式**，帧格式由标准和实现决定，不由请求字段定义。
+
+SSE 的帧规则：
+
+```text
+data: {"choices":[{"delta":{"content":"你"}}]}
+
+data: {"choices":[{"delta":{"content":"好"}}]}
+
+data: [DONE]
+```
+
+| 规则 | 说明                                                            |
+|------|-----------------------------------------------------------------|
+| 分帧 | 空行（`\n\n`）结束一个事件，不是单个换行                        |
+| 字段 | `data:` / `event:` / `id:` / `retry:`；`data:` 后只去掉一个空格 |
+| 注释 | 以 `:` 开头（如 `: ping`），是心跳，忽略                        |
+| 结束 | `data: [DONE]` 不是 JSON，收到即停                              |
+
+**为什么不是 JSON 数组**：
+
+1. **JSON 数组无法边收边解析**。标准 JSON 解析器要等 `]` 闭合才能确认结构合法，等于必须等全部生成完——流式就失去意义了（除非自己写流式
+   JSON 解析器）。
+2. **SSE 每帧是独立完整负载**。按空行分帧，单帧解析失败不影响后续帧；JSON 数组一处损坏整包报废。
+3. **标准与生态**。浏览器 `EventSource` 原生支持 SSE；Nginx、CDN、API 网关都能按行 flush。JSON 数组没有"行"语义，中间层只能整包缓冲。
+4. **可插入控制帧**。心跳、`event:` 类型、`id:`、`retry:` 都能表达；纯 JSON 数组里塞这些会污染数据。
+5. **错误可单独成帧**。生成到一半出错，可以补一帧 `data: {"error": ...}`，数组格式做不到。
+
+**关于 token**：`data: ` 是传输层字节， **不计入 `usage`，也不计费**；每帧多 6 个字节，和 JSON 数组的逗号、括号是同一量级。用"省
+token"解释不成立。
+
+> 备选方案确实存在：NDJSON / JSON Lines 也能流式（每行一个 JSON）。SSE 胜在浏览器原生 API 与标准帧语义，所以成了 OpenAI
+> 兼容协议的事实标准。
+
+---
+
+### 7. 最后那行 `data: [DONE]` 是模型发出的，还是网关发出的？
+
+由 **服务端 API 层**在模型生成结束后追加，不是模型 token，也不是 SSE 标准的一部分。
+
+| 判断依据          | 说明                                        |
+|-------------------|---------------------------------------------|
+| 不是 JSON         | 模型只产 token，产不出协议控制帧            |
+| 不在 `choices` 里 | 它不属于任何一次补全结果                    |
+| 各实现都可能发    | OpenAI 平台发；vLLM 等自建推理服务也发      |
+| 可能被改写或省略  | 反向代理/网关可能补发、吞掉，或换成直接断流 |
+
+所以"网关"方向是对的，但更准确地说： **是厂商的 API 服务层（可能由网关实现）加的哨兵值**。客户端要两手准备：
+
+```python
+if payload == "[DONE]":
+    break
+# 没收到 [DONE] 但流结束了，也应正常收尾（容错），只是标记为"可能不完整"
+```
+
+---
+
+### 8. `temperature` 和 `top_p` 为什么通常只调一个？
+
+**两个都生效，而且是串联叠加的**：
+
+| 参数          | 作用位置                              | 效果                                   |
+|---------------|---------------------------------------|----------------------------------------|
+| `temperature` | softmax 之前缩放 logits               | 越低分布越尖（确定），越高越平（随机） |
+| `top_p`       | 对概率排序后截取累计前 `p` 的 nucleus | 砍掉长尾，只在高概率 token 里采样      |
+
+**只调一个的真实原因**：
+
+1. **效果耦合，无法归因**。同时改两个，输出变差时你不知道是谁的锅。
+2. **容易过度约束**。`temperature=0.1` + `top_p=0.1` 会把候选压得极少，表现为复读、死板、答非所问。
+3. **官方建议**。OpenAI 文档明确建议二者改其一，另一个保持默认 `1`。
+
+**极端情况**：
+
+- `temperature → 0` 等价贪心解码，`top_p` 基本无意义；
+- `top_p → 0` 只留最高概率 token，`temperature` 的影响也被压缩。
+
+**实践口径**：
+
+| 目标             | 建议                                        |
+|------------------|---------------------------------------------|
+| 创意/发散        | 调 `temperature`（0.7–1.0），`top_p=1`      |
+| 控长尾、保持稳定 | 调 `top_p`（0.9–0.95），`temperature=1`     |
+| 事实性/抽取      | `temperature=0–0.3`                         |
+| 推理模型         | 可能固定 `temperature=1` 或不支持，先查文档 |
+
+---
+
+### 9. 同一句话，中文为什么比英文更费 token？
+
+**分词器（BPE）的词表覆盖，不是存储。**
+
+- 词表里收录了大量英文高频词与子词，常见英文单词往往 **1 个 token**；
+- 中文常用字多数也能占 1 个 token，但生僻字、专有名词、跨字组合常被拆成多个字节级 token；
+- 中文没有空格，分词器依赖字间合并规则，覆盖率天然不如英文；
+- 结果是： **同样信息量，中文的 token 数通常更高**。
+
+**量化参考**（DeepSeek 官方口径，[Token 用量计算](https://api-docs.deepseek.com/zh-cn/quick_start/token_usage/)）：1
+个英文字符 ≈ 0.3 token，1 个中文字符 ≈ 0.6 token。同字数下中文约 2 倍；中文句子字数通常更少，所以整体差距会缩小，但多数场景仍是中文更费。
+
+**实际影响与对策**：
+
+- 成本：中文提示词更贵，长文档尤甚；
+- 上下文：同样的窗口能放的中文信息更少；
+- 延迟：输入 token 多，首 token 更慢；
+- 对策：精简系统提示、复用缓存、按 token 预算裁剪（不要按字符数估）、少用生僻表达；
+- 新分词器（如 o200k）对中文有改善，但"中文更费"的方向没变。
+
+---
+
+### 10. 上下文窗口超了会发生什么，报错还是截断？
+
+**托管 API 的标准行为**：HTTP 400，`type: invalid_request_error`，`code: context_length_exceeded`。
+
+```json
+{
+  "error": {
+    "message": "This model's maximum context length is 128000 tokens. However, your messages resulted in 130512 tokens.",
+    "type": "invalid_request_error",
+    "param": "messages",
+    "code": "context_length_exceeded"
+  }
+}
+```
+
+**两种"到顶"要分清**：
+
+| 场景                       | 发生时机 | 表现                                                   | 处理                                        |
+|----------------------------|----------|--------------------------------------------------------|---------------------------------------------|
+| 输入 + `max_tokens` > 窗口 | 请求阶段 | 400 `context_length_exceeded`，**一个 token 都不生成** | 裁剪历史 / 降 `max_tokens` / 换长上下文模型 |
+| 生成中触顶                 | 生成阶段 | HTTP 200，`finish_reason: "length"`，内容不完整        | 续写、提高上限、缩短输入                    |
+
+**兼容实现的差异**（这也是"截断"这个印象的来源）：
+
+| 实现类型                        | 典型行为                                                           |
+|---------------------------------|--------------------------------------------------------------------|
+| OpenAI / Azure / 多数托管 API   | 报 400，不截断                                                     |
+| vLLM                            | 报 400（超长直接拒绝）                                             |
+| Ollama / llama.cpp 等本地运行时 | 按配置的 `num_ctx` / `--ctx-size` 截断或丢弃超出部分，**可能静默** |
+| 部分兼容网关                    | 自动裁掉最早的消息（滑动窗口），调用方无感知                       |
+
+**为什么"截断"更危险**：静默丢历史 → 模型答非所问、幻觉、不可复现；而且你从响应里看不出被丢了什么。
+**不要把截断当默认行为来设计。**
+
+**工程做法**：
+
+1. 请求前算 token 预算：`窗口 - 预留输出 - 安全边际`；
+2. 超了先裁剪：滑动窗口、摘要压缩、RAG 只召回相关片段；
+3. 捕获 400 `context_length_exceeded`，降级重试（缩短输入或换模型）；
+4. 对 `finish_reason == "length"` 单独分支，不要当正常结束；
+5. 明确告知用户"历史已被压缩"，避免静默改变语义。
+
+---
+
+### 附：一句话记忆卡
+
+1. 最小请求 = `model` + `messages`。
+2. `assistant` 是模型说的话；工具结果走 `role: "tool"`。
+3. 非流式答案：`choices[0].message.content`；流式：`choices[0].delta.content`。
+4. `finish_reason`：`stop` / `length` / `tool_calls` / `content_filter` / `function_call`；`length` = token 预算耗尽。
+5. 计费 = 输入 token × 输入价 + 输出 token × 输出价；`total_tokens` 不参与。
+6. `data: ` 是 SSE 标准帧；不用 JSON 数组是因为数组无法增量解析。
+7. `[DONE]` 是服务端 API 层加的哨兵，不是模型输出。
+8. `temperature` 与 `top_p` 都生效，所以只调一个。
+9. 中文费 token 是分词器词表问题，不是存储问题。
+10. 上下文超限默认 400 报错；截断只出现在部分自建实现。

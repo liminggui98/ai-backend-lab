@@ -342,7 +342,7 @@ public final class LLMClient {
 
         // 百炼：空间级 key 必须配空间级域名，混用会 403 AccessDenied.Unpurchased。
         add(providers, "bailian",
-                firstNonBlank(env("BAILIAN_API_KEY"), env("DASHSCOPE_API_KEY")),
+                env("BAILIAN_API_KEY"),
                 envOr("BAILIAN_BASE_URL", "https://ws-pjpffg7677688nuc.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"),
                 envOr("BAILIAN_MODEL", "qwen-plus"));
 

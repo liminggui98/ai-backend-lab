@@ -1,8 +1,7 @@
 .env
-day1-starter/pgdata/
 *.class
 .idea/
 *.log
 .DS_Store
-/ai-backend-lab.iml
+*.iml
 /out/
