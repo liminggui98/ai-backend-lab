@@ -16,7 +16,7 @@
 
 代码在 [HelloLLM.java](HelloLLM.java)：零依赖，只用 JDK 21 的 `HttpClient` + `BodyHandlers.ofLines()`。
 
-代码输出内容在 [HelloLLM 输出内容.txt](HelloLLM%20输出内容)
+代码输出内容在 [HelloLLM 输出内容.txt](HelloLLM%20输出内容.txt)
 
 百炼只支持空间域名访问。
 
@@ -193,7 +193,7 @@ completion_tokens = 800 → 800 / 1e6 × 0.60 = $0.00048
 | 缓存命中   | `prompt_tokens_details.cached_tokens` 通常按输入价的 10%–50% 计费   |
 | 推理 token | `completion_tokens_details.reasoning_tokens` 计入输出，按输出价计费 |
 | `n > 1`    | 每个候选都产生 completion tokens，全部计费                          |
-| 流式       | 必须 `stream_options.include_usage: true` 才拿得到 `usage`          |
+| 流式       | 规范要求 + 别依赖默认 `stream_options.include_usage: true` 才拿得到 `usage`          |
 
 > 结论： **输入和输出各算各的**；`total_tokens` 只用于展示和限额，不要拿它乘单价。
 

@@ -105,8 +105,14 @@ OpenAI 与其它模型服务之间切换。
 {
   "model": "gpt-4o-mini",
   "messages": [
-    { "role": "system", "content": "你是一个简洁的助手。" },
-    { "role": "user", "content": "你好" }
+    {
+      "role": "system",
+      "content": "你是一个简洁的助手。"
+    },
+    {
+      "role": "user",
+      "content": "你好"
+    }
   ],
   "temperature": 0.7,
   "stream": false
@@ -232,7 +238,10 @@ OpenAI 与其它模型服务之间切换。
     {
       "id": "call_abc123",
       "type": "function",
-      "function": { "name": "get_weather", "arguments": "{\"city\":\"北京\"}" }
+      "function": {
+        "name": "get_weather",
+        "arguments": "{\"city\":\"北京\"}"
+      }
     }
   ]
 }
@@ -282,7 +291,10 @@ OpenAI 与其它模型服务之间切换。
 ```json
 {
   "type": "image_url",
-  "image_url": { "url": "https://example.com/cat.png", "detail": "high" }
+  "image_url": {
+    "url": "https://example.com/cat.png",
+    "detail": "high"
+  }
 }
 ```
 
@@ -419,8 +431,14 @@ OpenAI 与其它模型服务之间切换。
       "strict": true,
       "schema": {
         "type": "object",
-        "properties": { "name": { "type": "string" } },
-        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
         "additionalProperties": false
       }
     }
@@ -438,15 +456,17 @@ OpenAI 与其它模型服务之间切换。
 
 #### 1.4.10 `stream` 与 `stream_options`
 
-| 字段                           | 类型      | 必填 | 可空 | 默认值  | 说明                                                                                                           |
-|--------------------------------|-----------|------|------|---------|----------------------------------------------------------------------------------------------------------------|
-| `stream`                       | `boolean` | ❌   | ✅   | `false` | `true` 时以 SSE 增量返回                                                                                       |
-| `stream_options.include_usage` | `boolean` | ❌   | ❌   | `false` | 为 `true` 时，所有 chunk 都带 `usage` 字段（其余为 `null`），并在 `[DONE]` 前额外返回一个只含 `usage` 的 chunk |
+| 字段                           | 类型      | 必填 | 可空 | 默认值  | 说明                                                                                                                                                                                           |
+|--------------------------------|-----------|------|------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `stream`                       | `boolean` | ❌   | ✅   | `false` | `true` 时以 SSE 增量返回                                                                                                                                                                       |
+| `stream_options.include_usage` | `boolean` | ❌   | ❌   | `false` | 为 `true` 时，所有 chunk 都带 `usage` 字段（其余为 `null`），并在 `[DONE]` 前额外返回一个只含 `usage` 的 chunk，DeepSeek 和智谱的 usage 与 finish_reason 同帧，只有百炼是独立的空 choices 帧。 |
 
 ```json
 {
   "stream": true,
-  "stream_options": { "include_usage": true }
+  "stream_options": {
+    "include_usage": true
+  }
 }
 ```
 
@@ -480,8 +500,14 @@ OpenAI 与其它模型服务之间切换。
     "description": "查询指定城市的实时天气",
     "parameters": {
       "type": "object",
-      "properties": { "city": { "type": "string" } },
-      "required": ["city"],
+      "properties": {
+        "city": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "city"
+      ],
       "additionalProperties": false
     },
     "strict": true
@@ -552,8 +578,14 @@ OpenAI 与其它模型服务之间切换。
 {
   "model": "gpt-4o-mini",
   "messages": [
-    { "role": "system", "content": "你是一个简洁的助手。" },
-    { "role": "user", "content": "用一句话解释什么是闭包。" }
+    {
+      "role": "system",
+      "content": "你是一个简洁的助手。"
+    },
+    {
+      "role": "user",
+      "content": "用一句话解释什么是闭包。"
+    }
   ],
   "temperature": 0.7,
   "max_completion_tokens": 256
@@ -569,10 +601,16 @@ OpenAI 与其它模型服务之间切换。
     {
       "role": "user",
       "content": [
-        { "type": "text", "text": "描述这张图片。" },
+        {
+          "type": "text",
+          "text": "描述这张图片。"
+        },
         {
           "type": "image_url",
-          "image_url": { "url": "https://example.com/a.jpg", "detail": "low" }
+          "image_url": {
+            "url": "https://example.com/a.jpg",
+            "detail": "low"
+          }
         }
       ]
     }
@@ -585,7 +623,12 @@ OpenAI 与其它模型服务之间切换。
 ```json
 {
   "model": "gpt-4o-mini",
-  "messages": [{ "role": "user", "content": "北京现在多少度？" }],
+  "messages": [
+    {
+      "role": "user",
+      "content": "北京现在多少度？"
+    }
+  ],
   "tools": [
     {
       "type": "function",
@@ -594,8 +637,14 @@ OpenAI 与其它模型服务之间切换。
         "description": "查询指定城市的实时天气",
         "parameters": {
           "type": "object",
-          "properties": { "city": { "type": "string" } },
-          "required": ["city"]
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
         }
       }
     }
@@ -697,8 +746,12 @@ OpenAI 与其它模型服务之间切换。
     "prompt_tokens": 19,
     "completion_tokens": 10,
     "total_tokens": 29,
-    "prompt_tokens_details": { "cached_tokens": 0 },
-    "completion_tokens_details": { "reasoning_tokens": 0 }
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
   }
 }
 ```
@@ -716,9 +769,16 @@ OpenAI 与其它模型服务之间切换。
 ```json
 {
   "model": "gpt-4o-mini",
-  "messages": [{ "role": "user", "content": "写一段 200 字的介绍" }],
+  "messages": [
+    {
+      "role": "user",
+      "content": "写一段 200 字的介绍"
+    }
+  ],
   "stream": true,
-  "stream_options": { "include_usage": true }
+  "stream_options": {
+    "include_usage": true
+  }
 }
 ```
 
@@ -877,10 +937,10 @@ done = False
 
 for raw in response.iter_lines(decode_unicode=True):
     line = raw.rstrip("\r")
-    if not line or line.startswith(":"):   # 空行 / 心跳注释
+    if not line or line.startswith(":"):  # 空行 / 心跳注释
         continue
     if not line.startswith("data:"):
-        continue                            # event: / id: / retry: 等字段
+        continue  # event: / id: / retry: 等字段
     payload = line[len("data:"):].lstrip(" ")
     if payload == "[DONE]":
         done = True
@@ -906,7 +966,7 @@ if not done:
     raise RuntimeError("stream ended without [DONE]")
 
 for slot in tool_calls.values():
-    slot["args"] = json.loads(slot["arguments"])   # 需处理解析失败
+    slot["args"] = json.loads(slot["arguments"])  # 需处理解析失败
 ```
 
 #### 2.2.8 异常、超时与重连

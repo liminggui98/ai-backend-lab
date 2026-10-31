@@ -70,10 +70,13 @@ public class HelloLLM {
     }
 
     private static void call(LLMProvider llmProvider, boolean stream) throws IOException, InterruptedException {
+        String streamOptions = stream ? "\"stream_options\": {\"include_usage\": true}," : "";
+
         String payload = """
                 {
                   "model": "%s",
                   "stream": %b,
+                  %s
                   "max_tokens": %s,
                   "temperature": 0.3,
                   "messages": [
@@ -81,7 +84,7 @@ public class HelloLLM {
                     {"role": "user", "content": "用一句话解释什么是 RAG"}
                   ]
                 }
-                """.formatted(llmProvider.model(), stream, 1024);
+                """.formatted(llmProvider.model(), stream, streamOptions, 1024);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(llmProvider.baseUrl() + "/chat/completions"))
