@@ -6,13 +6,13 @@
 > API_KEY（百炼需修改BASE_URL与API_KEY对应）。通过命令 `set -a; source .env; set +a;` 生效环境变量，在同一终端下运行
 > `java HelloLLM.java` 即可;
 
-| 项                | 结果                            | 怎么验证的                             |
-|-------------------|---------------------------------|----------------------------------------|
-| Docker + pgvector | ✅ pg16，vector 0.8.7           | `select * from healthcheck;` 有 1 行   |
-| DeepSeek 流式     | ✅ deepseek-flash               | 运行 [HelloLLM.java](HelloLLM.java)    |
-| 智谱流式          | ✅ glm-4-flash                  | 运行 [HelloLLM.java](HelloLLM.java)    |
-| 百炼流式          | ✅ qwen3.7-plus（专属空间域名） | 运行 [HelloLLM.java](HelloLLM.java)    |
-| 仓库提交          | ✅ ai-backend-lab               | github `ai-backend-lab` 有代码，可访问 |
+| 项                | 结果                         | 怎么验证的                             |
+|-------------------|------------------------------|----------------------------------------|
+| Docker + pgvector | ✅ pg16，vector 0.8.7        | `select * from healthcheck;` 有 1 行   |
+| DeepSeek 流式     | ✅ deepseek-flash            | 运行 [HelloLLM.java](HelloLLM.java)    |
+| 智谱流式          | ✅ glm-4-flash               | 运行 [HelloLLM.java](HelloLLM.java)    |
+| 百炼流式          | ✅ qwen-plus（专属空间域名） | 运行 [HelloLLM.java](HelloLLM.java)    |
+| 仓库提交          | ✅ ai-backend-lab            | github `ai-backend-lab` 有代码，可访问 |
 
 代码在 [HelloLLM.java](HelloLLM.java)：零依赖，只用 JDK 21 的 `HttpClient` + `BodyHandlers.ofLines()`。
 
@@ -21,14 +21,15 @@
 百炼只支持空间域名访问。
 
 ## 二、实测数据
-
 环境参考 [环境清单.md](环境清单.md)
 
-| provider | 模型           | 首 token    | 总耗时    |
-|----------|----------------|-------------|-----------|
-| DeepSeek | deepseek-flash | 0.36–0.98 s | 1.0–1.3 s |
-| 智谱     | glm-4-flash    | 1.4–1.6 s   | 2.3–3.1 s |
-| 百炼     | qwen3.7-plus   | 0.6–10.7 s  | 3.8–11 s  |
+跑了十次流式算出来的平均值、P50、P95。
+
+| provider | 模型           | 首 token | 总耗时 |
+|----------|----------------|----------|--------|
+| DeepSeek | deepseek-flash |          |        |
+| 智谱     | glm-4-flash    |          |        |
+| 百炼     | qwen-plus      |          |        |
 
 差异：
 
@@ -250,12 +251,6 @@ token"解释不成立。
 | 可能被改写或省略  | 反向代理/网关可能补发、吞掉，或换成直接断流 |
 
 所以"网关"方向是对的，但更准确地说： **是厂商的 API 服务层（可能由网关实现）加的哨兵值**。客户端要两手准备：
-
-```python
-if payload == "[DONE]":
-    break
-# 没收到 [DONE] 但流结束了，也应正常收尾（容错），只是标记为"可能不完整"
-```
 
 ---
 

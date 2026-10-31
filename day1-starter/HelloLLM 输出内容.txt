@@ -1,302 +1,62 @@
----模型商：DeepSeek，模型：deepseek-flash，非流式输出---
-payload: {
-  "model": "deepseek-flash",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是让大模型在回答前先从外部知识库检索相关内容、再结合检索结果生成答案的技术，可提升准确性并减少幻觉。
-usage: {"prompt_tokens":47,"completion_tokens":60,"total_tokens":107,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":23},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
-total: 1.29 s 
-
----模型商：DeepSeek，模型：deepseek-flash，流式输出---
-payload: {
-  "model": "deepseek-flash",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是指模型在生成回答前先从外部知识库检索相关信息，再结合这些信息生成更准确、可溯源答案的技术。
-firstToken: 991.65 ms
-usage: {"prompt_tokens":47,"completion_tokens":75,"total_tokens":122,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":41},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
-total: 1.25 s 
-
----模型商：百炼，模型：qwen3.7-plus，非流式输出---
-payload: {
-  "model": "qwen3.7-plus",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是一种在生成回答前先从外部知识库检索相关信息，并将其作为上下文输入给大语言模型，从而提高回答准确性和时效性的技术。
-usage: {"prompt_tokens":31,"total_tokens":231,"completion_tokens":200,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":163,"text_tokens":200}}
-total: 3.89 s 
-
----模型商：百炼，模型：qwen3.7-plus，流式输出---
-payload: {
-  "model": "qwen3.7-plus",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是一种通过先从外部知识库检索相关信息，再将其作为上下文输入给大语言模型，从而生成更准确、实时回答的技术。
-firstToken: 3351.56 ms
-usage: {"prompt_tokens":31,"total_tokens":233,"completion_tokens":202,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":165,"text_tokens":202}}
-total: 3.83 s 
-
----模型商：智谱，模型：glm-4-flash，非流式输出---
-payload: {
-  "model": "glm-4-flash",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG是Retrieval-Augmented Generation的缩写，指的是一种通过检索外部信息来增强生成式模型输出的技术。
-usage: {"completion_tokens":29,"prompt_tokens":24,"total_tokens":53}
-total: 1.75 s 
-
----模型商：智谱，模型：glm-4-flash，流式输出---
-payload: {
-  "model": "glm-4-flash",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG是检索-摘要-排名（Retrieval-Aggregation-Generation）的缩写，是一种用于生成式AI模型的技术，用于从大量数据中检索信息、汇总并生成新的内容。
-firstToken: 561.22 ms
-usage: {"prompt_tokens":24,"completion_tokens":46,"total_tokens":70}
-total: 2.57 s 
-
-
----模型商：DeepSeek，模型：deepseek-flash，非流式输出---
-
-payload: {
-  "model": "deepseek-flash",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是指在大模型生成回答前，先从外部知识库检索相关文档并注入上下文，从而让回答更准确、可溯源。
-usage: {"prompt_tokens":47,"completion_tokens":68,"total_tokens":115,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":33},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
-total: 1.53 s
-
----模型商：DeepSeek，模型：deepseek-flash，流式输出---
-payload: {
-  "model": "deepseek-flash",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是让大模型在回答前先从外部知识库检索相关信息，再基于检索结果生成回答的技术。
-firstToken: 1026.28 ms
-usage: {"prompt_tokens":47,"completion_tokens":74,"total_tokens":121,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":44},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
-total: 1.15 s
-
----模型商：百炼，模型：qwen3.7-plus，非流式输出---
-
-payload: {
-  "model": "qwen3.7-plus",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是一种将信息检索与大语言模型结合的技术，通过先从外部知识库检索相关上下文，来增强模型回答的准确性并减少幻觉。
-usage: {"prompt_tokens":31,"total_tokens":284,"completion_tokens":253,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":215,"text_tokens":253}}
-total: 4.78 s
-
----模型商：百炼，模型：qwen3.7-plus，流式输出---
-payload: {
-  "model": "qwen3.7-plus",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是一种通过先从外部知识库检索相关信息，再将其作为上下文输入给大语言模型，从而生成更准确、实时回答的技术。
-firstToken: 3368.76 ms
-usage: {"prompt_tokens":31,"total_tokens":240,"completion_tokens":209,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":172,"text_tokens":209}}
-total: 3.87 s
-
----模型商：智谱，模型：glm-4-flash，非流式输出---
-payload: {
-  "model": "glm-4-flash",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG是Retrieval-Augmented Generation的缩写，指的是通过检索外部信息来增强生成式模型的生成能力。
-usage: {"completion_tokens":28,"prompt_tokens":24,"total_tokens":52}
-total: 1.29 s
-
----模型商：智谱，模型：glm-4-flash，流式输出---
-payload: {
-  "model": "glm-4-flash",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG是“检索-摘要-生成”的缩写，是一种用于问答系统的技术，通过检索相关文档，生成问题的答案摘要。
-firstToken: 465.46 ms
-usage: {"prompt_tokens":24,"completion_tokens":32,"total_tokens":56}
-total: 1.07 s
-
-
-
-
----模型商：DeepSeek，模型：deepseek-flash，非流式输出---
-payload: {
-  "model": "deepseek-flash",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是在大模型生成回答前，先从外部知识库检索相关文档并将其作为上下文输入，从而提升回答准确性和时效性的技术。
-usage: {"prompt_tokens":47,"completion_tokens":87,"total_tokens":134,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":51},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
-total: 1.74 s
-
----模型商：DeepSeek，模型：deepseek-flash，流式输出---
-payload: {
-  "model": "deepseek-flash",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是让大模型在回答前先从外部知识库检索相关资料，再结合检索内容生成回答的技术，能提升准确性并减少幻觉。
-firstToken: 660.55 ms
-usage: {"prompt_tokens":47,"completion_tokens":57,"total_tokens":104,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":20},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":47}
-total: 0.87 s
-
----模型商：百炼，模型：qwen3.7-plus，非流式输出---
-payload: {
-  "model": "qwen3.7-plus",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是一种在生成回答前先从外部知识库检索相关信息，并将其作为上下文输入给大语言模型，从而提升回答准确性和时效性的技术。
-usage: {"prompt_tokens":31,"total_tokens":241,"completion_tokens":210,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":172,"text_tokens":210}}
-total: 3.97 s
-
----模型商：百炼，模型：qwen3.7-plus，流式输出---
-payload: {
-  "model": "qwen3.7-plus",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG（检索增强生成）是一种通过在生成回答前先从外部知识库检索相关信息来为大语言模型提供上下文的技术，从而有效提升输出的准确性并减少幻觉。
-firstToken: 4287.01 ms
-usage: {"prompt_tokens":31,"total_tokens":299,"completion_tokens":268,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":31},"completion_tokens_details":{"reasoning_tokens":232,"text_tokens":268}}
-total: 4.77 s
-
----模型商：智谱，模型：glm-4-flash，非流式输出---
-payload: {
-  "model": "glm-4-flash",
-  "stream": false,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG是检索-摘要-排名（Retrieval-Aggregation-Generation）的缩写，是一种用于生成式AI模型的技术，用于检索相关信息、聚合数据并生成文本。
-usage: {"completion_tokens":42,"prompt_tokens":24,"total_tokens":66}
-total: 2.09 s
-
----模型商：智谱，模型：glm-4-flash，流式输出---
-payload: {
-  "model": "glm-4-flash",
-  "stream": true,
-  "max_tokens": 1024,
-  "temperature": 0.3,
-  "messages": [
-    {"role": "system", "content": "你是一个简洁的技术助手，回答不超过三句话。"},
-    {"role": "user", "content": "用一句话解释什么是 RAG"}
-  ]
-}
-
-answer: RAG是Retrieval-Augmented Generation的缩写，指的是通过检索外部信息来增强生成式模型的生成能力。
-firstToken: 721.71 ms
-usage: {"prompt_tokens":24,"completion_tokens":28,"total_tokens":52}
-total: 1.72 s
+provider  model            是否流式                首token       总耗时    tokens(p/c/t)   tok/s
+----------------------------------------------------------------------------------------
+deepseek  deepseek-flash   是                    273ms    1630ms       47/101/148    74.4
+zhipu     glm-4-flash      是                    479ms    1513ms         24/26/50    25.1
+bailian   qwen-plus        是                    500ms    1708ms         30/57/87    47.2
+deepseek  deepseek-flash   否                        -    1088ms        47/75/122       -
+zhipu     glm-4-flash      否                        -    1157ms         24/28/52       -
+bailian   qwen-plus        否                        -    1557ms         30/57/87       -
+deepseek  deepseek-flash   是                    110ms    1299ms       47/124/171   104.3
+zhipu     glm-4-flash      是                    644ms    1147ms         24/25/49    49.7
+bailian   qwen-plus        是                    333ms    1311ms         30/45/75    46.0
+deepseek  deepseek-flash   否                        -    1193ms        47/93/140       -
+zhipu     glm-4-flash      否                        -    4768ms         24/48/72       -
+bailian   qwen-plus        否                        -    1466ms         30/56/86       -
+deepseek  deepseek-flash   是                    119ms    1259ms       47/121/168   106.1
+zhipu     glm-4-flash      是                   1982ms    2498ms         24/27/51    52.3
+bailian   qwen-plus        是                    338ms    1602ms         30/56/86    44.3
+deepseek  deepseek-flash   否                        -    1158ms        47/83/130       -
+zhipu     glm-4-flash      否                        -    1134ms         24/25/49       -
+bailian   qwen-plus        否                        -    1626ms         30/57/87       -
+deepseek  deepseek-flash   是                    409ms    1055ms        47/92/139   142.4
+zhipu     glm-4-flash      是                    581ms    1280ms         24/28/52    40.1
+bailian   qwen-plus        是                    242ms    1535ms         30/57/87    44.1
+deepseek  deepseek-flash   否                        -    1344ms       47/112/159       -
+zhipu     glm-4-flash      否                        -    2559ms         24/30/54       -
+bailian   qwen-plus        否                        -    1535ms         30/57/87       -
+deepseek  deepseek-flash   是                    128ms     897ms       47/104/151   135.2
+zhipu     glm-4-flash      是                   1760ms    2579ms         24/28/52    34.2
+bailian   qwen-plus        是                    292ms    1556ms         30/56/86    44.3
+deepseek  deepseek-flash   否                        -    1212ms       47/122/169       -
+zhipu     glm-4-flash      否                        -    3374ms         24/34/58       -
+bailian   qwen-plus        否                        -    1534ms         30/57/87       -
+deepseek  deepseek-flash   是                    103ms     603ms         47/30/77    60.0
+zhipu     glm-4-flash      是                    626ms    1227ms         24/28/52    46.6
+bailian   qwen-plus        是                    522ms    1685ms         30/56/86    48.2
+deepseek  deepseek-flash   否                        -    1316ms        47/64/111       -
+zhipu     glm-4-flash      否                        -    1819ms         24/28/52       -
+bailian   qwen-plus        否                        -    1536ms         30/57/87       -
+deepseek  deepseek-flash   是                    119ms    1043ms        47/57/104    61.7
+zhipu     glm-4-flash      是                    522ms    1832ms         24/40/64    30.5
+bailian   qwen-plus        是                    661ms    1887ms         30/54/84    44.0
+deepseek  deepseek-flash   否                        -    1100ms       47/121/168       -
+zhipu     glm-4-flash      否                        -    1704ms         24/30/54       -
+bailian   qwen-plus        否                        -    1740ms         30/57/87       -
+deepseek  deepseek-flash   是                    109ms     975ms        47/62/109    71.6
+zhipu     glm-4-flash      是                    868ms    1630ms         24/32/56    42.0
+bailian   qwen-plus        是                    252ms    1522ms         30/56/86    44.1
+deepseek  deepseek-flash   否                        -     674ms        47/57/104       -
+zhipu     glm-4-flash      否                        -    1952ms         24/43/67       -
+bailian   qwen-plus        否                        -    1537ms         30/57/87       -
+deepseek  deepseek-flash   是                    158ms    1186ms       47/110/157   107.0
+zhipu     glm-4-flash      是                    754ms    2678ms         24/47/71    24.4
+bailian   qwen-plus        是                    634ms    1772ms         30/52/82    45.7
+deepseek  deepseek-flash   否                        -    1013ms        47/60/107       -
+zhipu     glm-4-flash      否                        -    1636ms         24/27/51       -
+bailian   qwen-plus        否                        -    1636ms         30/57/87       -
+deepseek  deepseek-flash   是                    126ms     980ms         47/39/86    45.7
+zhipu     glm-4-flash      是                   1586ms    2447ms         24/30/54    34.8
+bailian   qwen-plus        是                    404ms    1671ms         30/56/86    44.2
+deepseek  deepseek-flash   否                        -    1041ms        47/62/109       -
+zhipu     glm-4-flash      否                        -    1431ms         24/30/54       -
+bailian   qwen-plus        否                        -    1741ms         30/57/87       -
