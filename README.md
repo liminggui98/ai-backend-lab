@@ -5,23 +5,23 @@
 
 ## 进度
 
-| 周 | 主题                                | 交付                             | 状态 |
-|----|-------------------------------------|----------------------------------|------|
-| W0 | 环境、模型接入、选型                | pgvector、三家 provider 流式调用 | ✅   |
-| W1 | Java 21 + Spring Boot 3 + Spring AI | 可切换 provider 的流式服务       | 🚧   |
-| W2 | Prompt / Tool Calling / Memory      | 项目 0：AI 助手                  | ⬜   |
-| W3 | RAG 上：Tika / 切分 / PgVector      | ingest 管道 + 检索接口           | ⬜   |
-| W4 | RAG 下：混合检索 / Rerank / 评测    | 项目一：企业知识库               | ⬜   |
-| W5 | Agent：LangChain4j / 状态机 / MCP   | 项目二：异常处理 Agent           | ⬜   |
-| W6 | 网关 + 工程化                       | 项目三：LLM 统一网关             | ⬜   |
-| W7 | 面试冲刺                            | 62 题 + 3 套系统设计             | ⬜   |
-| W8 | 面试与 Offer                        | —                                | ⬜   |
+| 周 | 主题                                | 交付                                                          | 状态 |
+|----|-------------------------------------|---------------------------------------------------------------|------|
+| W0 | 环境、模型接入、选型                | pgvector、三家 provider 流式调用、JD 词频、60 家公司、简历 v1 | ✅   |
+| W1 | Java 21 + Spring Boot 3 + Spring AI | 可切换 provider 的流式服务                                    | 🚧   |
+| W2 | Prompt / Tool Calling / Memory      | 项目 0：AI 助手                                               | ⬜   |
+| W3 | RAG 上：Tika / 切分 / PgVector      | ingest 管道 + 检索接口                                        | ⬜   |
+| W4 | RAG 下：混合检索 / Rerank / 评测    | 项目一：企业知识库                                            | ⬜   |
+| W5 | Agent：LangChain4j / 状态机 / MCP   | 项目二：异常处理 Agent                                        | ⬜   |
+| W6 | 网关 + 工程化                       | 项目三：LLM 统一网关                                          | ⬜   |
+| W7 | 面试冲刺                            | 62 题 + 3 套系统设计                                          | ⬜   |
+| W8 | 面试与 Offer                        | —                                                             | ⬜   |
 
 ## 目录
 
 ```
 day1-starter/      环境验证：pgvector 容器 + 零依赖的 SSE 流式调用
-day2-starter/      JD 词频分析：31 份 JD → 23 词频表 + 27 个岗位口径
+day2-starter/      JD 词频分析：31 份 JD → 23 个关键词 + 27 个岗位口径
 day3-starter/      三家 API 对比 + 多 provider 统一客户端
 day4-starter/      周复盘，查看打卡表【8周总览】、W1【每日计划】
 day5-starter/      Java 21：record / sealed / 模式匹配 / 文本块

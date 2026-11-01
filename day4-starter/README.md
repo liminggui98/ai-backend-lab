@@ -63,7 +63,7 @@
 
 ### 4.3 8 周总览-W3~W5 所需项目：
 
-1. RAG 项目：rag-knowledge;
+1. RAG 项目：rag-knowledge-base;
 2. AGENT项目：agent-workflow。
 
 ## 5. 卡在哪

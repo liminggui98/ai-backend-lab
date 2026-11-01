@@ -49,7 +49,7 @@ export BAILIAN_BASE_URL=https://ws-xxx.cn-beijing.maas.aliyuncs.com/compatible-m
 # 3) 跑实测（对比表 C 的数据来源）
 java LLMClient.java                      # 所有已配置的 provider，流式
 java LLMClient.java --provider deepseek  # 只跑一家
-java LLMClient.java --provider all --chat  # 非流式，usage 更准
+java LLMClient.java --provider all --chat  # 非流式
 ```
 
 输出长这样：

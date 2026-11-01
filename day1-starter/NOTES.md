@@ -54,7 +54,7 @@
 
 ```json
 {
-  "model": "gpt-4o-mini",
+  "model": "deepseek-chat",
   "messages": [
     {
       "role": "user",
@@ -103,7 +103,7 @@ choices[i].message.content，i=0..n-1
 
 ```python
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="deepseek-flash",
     messages=[{"role": "user", "content": "你好"}],
 )
 print(resp.choices[0].message.content)  # 原始 JSON 即 choices[0].message.content
@@ -187,12 +187,12 @@ completion_tokens = 800 → 800 / 1e6 × 0.60 = $0.00048
 
 再叠加四个变量：
 
-| 变量       | 影响                                                                                                    |
-|------------|---------------------------------------------------------------------------------------------------------|
-| 缓存命中   | `prompt_tokens_details.cached_tokens`                                                                   |
-| 推理 token | `completion_tokens_details.reasoning_tokens` 计入输出，按输出价计费                                     |
-| `n > 1`    | 每个候选都产生 completion tokens，全部计费                                                              |
-| 流式       | 规范要求显式开启 `stream_options.include_usage: true`；本环境三家默认也会返回 `usage`，但别依赖这个默认 |
+| 变量       | 影响                                                                        |
+|------------|-----------------------------------------------------------------------------|
+| 缓存命中   | `prompt_tokens_details.cached_tokens`                                       |
+| 推理 token | `completion_tokens_details.reasoning_tokens` 计入输出，按输出价计费         |
+| `n > 1`    | 每个候选都产生 completion tokens，全部计费                                  |
+| 流式       | 规范要求显式开启 `stream_options.include_usage: true`；不开启就拿不到 usage |
 
 > 结论： **输入和输出各算各的**；`total_tokens` 只用于展示和限额，不要拿它乘单价。
 
