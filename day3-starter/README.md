@@ -57,7 +57,7 @@ java LLMClient.java --provider all --chat  # 非流式，usage 更准
 ```
 provider  model               首token       总耗时    tokens(p/c/t)   tok/s content.length reasoning.length
 ---------------------------------------------------------------------------------------------------
-deepseek  deepseek-flash       895ms    1107ms         22/31/53 146.2        55         0
+deepseek  deepseek-flash       892ms    1374ms        47/66/113 136.9        76        82
 ```
 
 可选参数：`--prompt "..."`、`--idle-ms 20000`、`--max-tokens 1024`、`--chat`。
