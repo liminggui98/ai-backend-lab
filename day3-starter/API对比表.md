@@ -23,6 +23,7 @@
 | 百炼是**推理模型**：先流 `reasoning_content`，思考结束才流 `content`          | 它的「首 token」取决于思考长度，和另外两家不可比    |
 | 百炼空间级 key **必须配空间级域名**，混用返回 `403 AccessDenied.Unpurchased`  | `day1-starter/HelloLLM.java` 配置                   |
 | 首帧 `delta` 只带 `role`，`content` 是空串                                    | 用它算首 token 会把延迟算低，`LLMClient` 已跳过空帧 |
+
 ---
 
 ## A.计价：价目与成本结论
@@ -34,13 +35,14 @@
 
 价目（2026-10-29 抄自官方定价页，单位：元/百万 token）
 
-| 服务商   | 模型           | 时段   | 输入档    | 输入 | 缓存命中 | 输出 | 来源                                                                                                                                         |
-|----------|----------------|--------|-----------|------|----------|------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| DeepSeek | deepseek-flash | 高峰   | 无上限    | 2    | 0.04     | 8    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                      |
-| DeepSeek | deepseek-flash | 空闲   | 无上限    | 1    | 0.02     | 4    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                      |
-| 智谱     | glm-4-flash    | 全时段 | 无上限    | 0    | —        | 0    | https://bigmodel.cn/console/modelcenter/square                                                                                               |
-| 百炼     | qwen3.7-plus   | 全时段 | < 256K    | 2    | 0.4      | 8    | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen3.7-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
-| 百炼     | qwen3.7-plus   | 全时段 | 256K ~ 1M | 6    | 1.2      | 24   | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen3.7-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
+| 服务商   | 模型           | 时段   | 输入档    | 输入 | 缓存命中 | 输出 | 来源                                                                                                                                      |
+|----------|----------------|--------|-----------|------|----------|------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| DeepSeek | deepseek-flash | 高峰   | 无上限    | 2    | 0.04     | 8    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                   |
+| DeepSeek | deepseek-flash | 空闲   | 无上限    | 1    | 0.02     | 4    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                   |
+| 智谱     | glm-4-flash    | 全时段 | 无上限    | 0    | —        | 0    | https://bigmodel.cn/console/modelcenter/square                                                                                            |
+| 百炼     | qwen-plus      | 全时段 | < 256K    | 2    | 0.4      | 8    | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
+| 百炼     | qwen-plus      | 全时段 | 256K ~ 1M | 6    | 1.2      | 24   | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
+| 百炼     | qwen-plus      | 全时段 | 256K ~ 1M | 6    | 1.2      | 24   | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
 
 **备注**
 
@@ -78,7 +80,7 @@
 >
 > 统一条件：同一 prompt（「用一句话解释什么是 RAG」+ system「你是一个简洁的技术助手，回答不超过三句话」）、`temperature=0.3`、
 > `max_tokens=1024`、流式、JDK 21、本机。
-> 百炼本轮统一用 `qwen3.7-plus`（与 A1 报价同一个模型）。
+> 百炼本轮统一用 `qwen-plus`（与 A1 报价同一个模型）。
 
 **逐次原始数据**
 
@@ -100,7 +102,7 @@
 |----------|------------------|----------|--------|---------------|-------|------|
 | DeepSeek | `deepseek-flash` |          |        |               |       |      |
 | 智谱     | `glm-4-flash`    |          |        |               |       |      |
-| 百炼     | `qwen3.7-plus`   |          |        |               |       |      |
+| 百炼     | `qwen-plus`      |          |        |               |       |      |
 
 > `tok/s` 按「输出 token ÷（总耗时 − 首 token）」由中位数现算，与「逐次 tok/s 取中位数」会差 1–10%，属正常。
 ---

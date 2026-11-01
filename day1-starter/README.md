@@ -51,7 +51,7 @@ java HelloLLM.java
 |------------------|--------------------------------------------------------------|---------------------|------------------------------|
 | DeepSeek         | `https://api.deepseek.com`                                   | `deepseek-flash`    | `sk-`（平台自建）            |
 | 智谱             | `https://open.bigmodel.cn/api/paas/v4`                       | `glm-4-flash`       | `sk-`（免费额度）            |
-| 百炼（专属空间） | `https://ws-xxx.cn-xxx.maas.aliyuncs.com/compatible-mode/v1` | 以控制台为准        | `sk-ws-`（绑定空间）         |
+| 百炼（专属空间） | `https://ws-xxx.cn-xxx.maas.aliyuncs.com/compatible-mode/v1` | `qwen-plus`         | `sk-ws-`（绑定空间）         |
 
 > 百炼的 DashScope 公共域名（`dashscope.aliyuncs.com`）自 2026-09-30 起进入维护期，新业务走专属空间域名。
 > 空间级 key 必须配空间级域名，混用会返回 `403 AccessDenied.Unpurchased`。

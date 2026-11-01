@@ -2,7 +2,7 @@
 
 ## 一、跑通了什么
 
-> 运行 `HelloLLM.java` 前，复制 [.env.example](../day1-starter/.env.example) 为 .env，修改各模型对应的
+> 运行 `HelloLLM.java` 前，复制 [.env.example](.env.example) 为 .env，修改各模型对应的
 > API_KEY（百炼需修改BASE_URL与API_KEY对应）。通过命令 `set -a; source .env; set +a;` 生效环境变量，在同一终端下运行
 > `java HelloLLM.java` 即可;
 

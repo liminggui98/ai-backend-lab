@@ -481,7 +481,7 @@ public final class LLMClient {
                         reply.firstTokenMs() < 0 ? "-" : reply.firstTokenMs() + "ms",
                         reply.totalMs() + "ms",
                         reply.usage().isEmpty() ? "-" : reply.usage().shortText(),
-                        streaming ? reply.tokensPerSecond() : "-",
+                        streaming ? "%.1f".formatted(reply.tokensPerSecond()) : "-",
                         streaming ? answer : reply.text);
             } catch (RuntimeException e) {
                 System.out.printf("%-9s %-16s ❌ %9s %16s %7s %9s%n", provider.name(), provider.model(), "-", "-", "-", e.getMessage());
