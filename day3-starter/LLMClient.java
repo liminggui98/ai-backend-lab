@@ -456,9 +456,9 @@ public final class LLMClient {
                 Message.system("你是一个简洁的技术助手，回答不超过三句话。"),
                 Message.user(prompt));
 
-        System.out.printf("%-9s %-16s %9s %9s %16s %7s %9s%n",
-                "provider", "model", "首token", "总耗时", "tokens(p/c/t)", "tok/s", "answer");
-        System.out.println("-".repeat(88));
+        System.out.printf("%-9s %-16s %9s %9s %16s %7s %9s %9s%n",
+                "provider", "model", "首token", "总耗时", "tokens(p/c/t)", "tok/s", "content.length", "reasoning.length");
+        System.out.println("-".repeat(99));
 
         for (Provider provider : providers) {
             if (!"all".equals(wanted) && !wanted.equals(provider.name())) {
@@ -466,23 +466,28 @@ public final class LLMClient {
             }
 
             try {
+                StringBuilder reasoningContent = new StringBuilder();
                 StringBuilder answer = new StringBuilder();
                 Reply reply = streaming ? provider.stream(messages, opts,
                         chunk -> {
+                            if (!chunk.reasoning().isEmpty()) {
+                                reasoningContent.append(chunk.reasoning());
+                            }
                             if (!chunk.delta().isEmpty()) {
                                 answer.append(chunk.delta());
                             }
                         })
                         : provider.chat(messages, opts);
 
-                System.out.printf("%-9s %-16s %9s %9s %16s %s %9s%n",
+                System.out.printf("%-9s %-16s %9s %9s %16s %s %9s %9s%n",
                         reply.provider(),
                         reply.model(),
                         reply.firstTokenMs() < 0 ? "-" : reply.firstTokenMs() + "ms",
                         reply.totalMs() + "ms",
                         reply.usage().isEmpty() ? "-" : reply.usage().shortText(),
                         streaming ? "%.1f".formatted(reply.tokensPerSecond()) : "-",
-                        streaming ? answer : reply.text);
+                        streaming ? answer.length() : reply.text.length(),
+                        streaming ? reasoningContent.length() : reply.reasoning.length());
             } catch (RuntimeException e) {
                 System.out.printf("%-9s %-16s ❌ %9s %16s %7s %9s%n", provider.name(), provider.model(), "-", "-", "-", e.getMessage());
             }

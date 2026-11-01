@@ -35,17 +35,20 @@
 
 价目（2026-10-29 抄自官方定价页，单位：元/百万 token）
 
-| 服务商   | 模型           | 时段   | 输入档    | 输入 | 缓存命中 | 输出 | 来源                                                                                                                                      |
-|----------|----------------|--------|-----------|------|----------|------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| DeepSeek | deepseek-flash | 高峰   | 无上限    | 2    | 0.04     | 8    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                   |
-| DeepSeek | deepseek-flash | 空闲   | 无上限    | 1    | 0.02     | 4    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                   |
-| 智谱     | glm-4-flash    | 全时段 | 无上限    | 0    | —        | 0    | https://bigmodel.cn/console/modelcenter/square                                                                                            |
-| 百炼     | qwen-plus      | 全时段 | < 256K    | 2    | 0.4      | 8    | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
-| 百炼     | qwen-plus      | 全时段 | 256K ~ 1M | 6    | 1.2      | 24   | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
-| 百炼     | qwen-plus      | 全时段 | 256K ~ 1M | 6    | 1.2      | 24   | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
+| 服务商   | 模型           | 时段   | 输入档      | 输入 | 缓存命中 | 输出 | 来源                                                                                                                                      |
+|----------|----------------|--------|-------------|------|----------|------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| DeepSeek | deepseek-flash | 高峰   | 无上限      | 2    | 0.04     | 8    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                   |
+| DeepSeek | deepseek-flash | 空闲   | 无上限      | 1    | 0.02     | 4    | https://api-docs.deepseek.com/zh-cn/quick_start/pricing                                                                                   |
+| 智谱     | glm-4-flash    | 全时段 | 无上限      | 0    | —        | 0    | https://bigmodel.cn/console/modelcenter/square                                                                                            |
+| 百炼     | qwen-plus      | 全时段 | <= 128K     | 0.8  | 0.16     | 2    | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
+| 百炼     | qwen-plus      | 全时段 | 128K ~ 256K | 2.4  | 0.48     | 20   | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
+| 百炼     | qwen-plus      | 全时段 | 256K ~ 1M   | 4.8  | 0.96     | 48   | https://bailian.console.aliyun.com/cn-beijing/model/market/detail/qwen-plus?serviceSite=asia-pacific-china&ref=search_result&kw=qwen3.7-p |
 
 **备注**
 
+- 展示的是文本输入的计价方式，百炼中还按输入（思考）、输入（思考模式缓存命中）、输入（Batch File）等分别计价。
+- 智谱其他收费模型计算公式：调用费用 = 未命中缓存的输入费用 + 缓存命中费用 + 输出费用 + 缓存存储费用。当前缓存存储处于限时免费。
+-
 - **免费不等于零成本**
 - 智谱 `glm-4-flash` <a href="https://bigmodel.cn/usercenter/proj-mgmt/rate-limits">速率限制</a>
 
@@ -56,19 +59,19 @@
 > **查官方文档或代码确认**。
 > ✅ 支持　❌ 不支持　⚠️ 有条件 / 文档未明确
 
-| 能力                                       | DeepSeek | 智谱 | 百炼 | 关键限制 |
-|--------------------------------------------|----------|------|------|----------|
-| 流式（SSE）                                |          |      |      |          |
-| 推理过程单独返回（`reasoning_content`）    |          |      |      |          |
-| `response_format: json_object`             |          |      |      |          |
-| `response_format: json_schema`（严格模式） |          |      |      |          |
-| 工具调用（`tools`）                        |          |      |      |          |
-| 并行工具调用                               |          |      |      |          |
-| 多轮 `tool` 角色回传                       |          |      |      |          |
-| 图片输入（多模态）                         |          |      |      |          |
-| 自带联网 / 检索                            |          |      |      |          |
-| 上下文缓存                                 |          |      |      |          |
-| `tool_choice` 可选值                       |          |      |      |          |
+| 能力                                       | DeepSeek | 智谱 | 百炼 | 关键限制                                                                                                                                                                                                                                                                                                                                                                                                                |
+|--------------------------------------------|----------|------|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 流式（SSE）                                | ✅       | ✅   | ✅   | <a href="https://api-docs.deepseek.com/zh-cn/api/create-chat-completion">DeepSeek</a> <a href="https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8">智谱</a>、<a href="https://docs.bailian.console.aliyun.com/zh/model-studio/qwen-api-via-openai-chat-completions ">百炼</a> 接口文档中的 stream 字段是否传入，是否可为 true，[LLMClient](LLMClient.java) 中有代码实现 |
+| 推理过程单独返回（`reasoning_content`）    | ❌       | ❌   | ❌   | 三家都默认开启 `thinking`                                                                                                                                                                                                                                                                                                                                                                                               |
+| `response_format: json_object`             |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `response_format: json_schema`（严格模式） |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 工具调用（`tools`）                        |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 并行工具调用                               |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 多轮 `tool` 角色回传                       |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 图片输入（多模态）                         |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 自带联网 / 检索                            |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 上下文缓存                                 |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `tool_choice` 可选值                       |          |      |      |                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ## C. 实测
 
