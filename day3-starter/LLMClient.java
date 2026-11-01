@@ -460,36 +460,38 @@ public final class LLMClient {
                 "provider", "model", "首token", "总耗时", "tokens(p/c/t)", "tok/s", "content.length", "reasoning.length");
         System.out.println("-".repeat(99));
 
-        for (Provider provider : providers) {
-            if (!"all".equals(wanted) && !wanted.equals(provider.name())) {
-                continue;
-            }
+        for (int i = 0; i < 10; i++) {
+            for (Provider provider : providers) {
+                if (!"all".equals(wanted) && !wanted.equals(provider.name())) {
+                    continue;
+                }
 
-            try {
-                StringBuilder reasoningContent = new StringBuilder();
-                StringBuilder answer = new StringBuilder();
-                Reply reply = streaming ? provider.stream(messages, opts,
-                        chunk -> {
-                            if (!chunk.reasoning().isEmpty()) {
-                                reasoningContent.append(chunk.reasoning());
-                            }
-                            if (!chunk.delta().isEmpty()) {
-                                answer.append(chunk.delta());
-                            }
-                        })
-                        : provider.chat(messages, opts);
+                try {
+                    StringBuilder reasoningContent = new StringBuilder();
+                    StringBuilder answer = new StringBuilder();
+                    Reply reply = streaming ? provider.stream(messages, opts,
+                            chunk -> {
+                                if (!chunk.reasoning().isEmpty()) {
+                                    reasoningContent.append(chunk.reasoning());
+                                }
+                                if (!chunk.delta().isEmpty()) {
+                                    answer.append(chunk.delta());
+                                }
+                            })
+                            : provider.chat(messages, opts);
 
-                System.out.printf("%-9s %-16s %9s %9s %16s %s %9s %9s%n",
-                        reply.provider(),
-                        reply.model(),
-                        reply.firstTokenMs() < 0 ? "-" : reply.firstTokenMs() + "ms",
-                        reply.totalMs() + "ms",
-                        reply.usage().isEmpty() ? "-" : reply.usage().shortText(),
-                        streaming ? "%.1f".formatted(reply.tokensPerSecond()) : "-",
-                        streaming ? answer.length() : reply.text.length(),
-                        streaming ? reasoningContent.length() : reply.reasoning.length());
-            } catch (RuntimeException e) {
-                System.out.printf("%-9s %-16s ❌ %9s %16s %7s %9s%n", provider.name(), provider.model(), "-", "-", "-", e.getMessage());
+                    System.out.printf("%-9s %-16s %9s %9s %16s %s %9s %9s%n",
+                            reply.provider(),
+                            reply.model(),
+                            reply.firstTokenMs() < 0 ? "-" : reply.firstTokenMs() + "ms",
+                            reply.totalMs() + "ms",
+                            reply.usage().isEmpty() ? "-" : reply.usage().shortText(),
+                            streaming ? "%.1f".formatted(reply.tokensPerSecond()) : "-",
+                            streaming ? answer.length() : reply.text.length(),
+                            streaming ? reasoningContent.length() : reply.reasoning.length());
+                } catch (RuntimeException e) {
+                    System.out.printf("%-9s %-16s ❌ %9s %16s %7s %9s%n", provider.name(), provider.model(), "-", "-", "-", e.getMessage());
+                }
             }
         }
     }
