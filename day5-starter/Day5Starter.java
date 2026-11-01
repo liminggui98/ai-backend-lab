@@ -57,7 +57,8 @@ public class Day5Starter {
             return switch (r) {
                 case Ok ignored -> 200;
                 case RateLimited ignored -> 429;
-                case TimedOut ignored -> 504;                       // 超时是 504；499 是客户端主动断开，不是超时
+                // 超时是 504；499 是客户端主动断开，不是超时
+                case TimedOut ignored -> 504;
                 // 紧凑构造器已保证 status ∈ [400,599]，边界不必再兜底
                 case Broken(var status, var code, var detail) -> status;
             };

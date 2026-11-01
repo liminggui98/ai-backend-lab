@@ -54,7 +54,7 @@
 
 ```json
 {
-  "model": "deepseek-chat",
+  "model": "deepseek-flash",
   "messages": [
     {
       "role": "user",
