@@ -23,7 +23,7 @@
 day1-starter/      环境验证：pgvector 容器 + 零依赖的 SSE 流式调用
 day2-starter/      JD 词频分析：31 份 JD → 23 词频表 + 27 个岗位口径
 day3-starter/      三家 API 对比 + 多 provider 统一客户端
-day4-starter/      周复盘，查看 W1 详细计划
+day4-starter/      周复盘，查看打卡表【8周总览】、W1【每日计划】
 day5-starter/      Java 21：record / sealed / 模式匹配 / 文本块
 day12-starter/     Prompt 五段式、few-shot、防注入
 ```
