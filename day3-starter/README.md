@@ -20,8 +20,6 @@
 | 新建仓库 `agent-workflow`，写`README.md` 文档            |
 | 新建仓库  `llm-gateway`，写`README.md` 文档              |
 
-仓库本体的 `README.md` 已经更新（进度表、目录、运行方式）。
-
 ## 为什么要有 LLMClient
 
 `HelloLLM.java` 只证明「能调通一次」。这个类解决的是「三家能当成一家用」：
@@ -34,12 +32,14 @@
 
 ## 运行
 
+调用次数 = 每次运行跑 10 轮 × provider 数
+
 ```bash
 cd day3-starter
 
 # 1) 离线自检：不联网、不花钱，验证 JSON 解析和空帧处理
 java LLMClient.java --selftest
-
+#
 # 2) 配 key（三家分开命名，不要再用 LLM_* 混着放）
 export DEEPSEEK_API_KEY=sk-xxx
 export ZHIPU_API_KEY=xxx
@@ -57,9 +57,7 @@ java LLMClient.java --provider all --chat  # 非流式，usage 更准
 ```
 provider  model               首token       总耗时    tokens(p/c/t)   tok/s content.length reasoning.length
 ---------------------------------------------------------------------------------------------------
-deepseek  deepseek-flash       512ms     820ms         22/36/58 116.9        62         0
-zhipu     glm-4-flash          606ms    1436ms         24/47/71 56.6        91         0
-bailian   qwen-plus            329ms    1614ms         30/57/87 44.4       112         0
+deepseek  deepseek-flash       895ms    1107ms         22/31/53 146.2        55         0
 ```
 
 可选参数：`--prompt "..."`、`--idle-ms 20000`、`--max-tokens 1024`、`--chat`。
