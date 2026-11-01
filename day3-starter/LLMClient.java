@@ -490,7 +490,7 @@ public final class LLMClient {
                             streaming ? answer.length() : reply.text.length(),
                             streaming ? reasoningContent.length() : reply.reasoning.length());
                 } catch (RuntimeException e) {
-                    System.out.printf("%-9s %-16s ❌ %9s %16s %7s %9s%n", provider.name(), provider.model(), "-", "-", "-", e.getMessage());
+                    System.out.printf("%-9s %-16s ❌ %9s %16s %7s %9s %9s %9s%n", provider.name(), provider.model(), "-", "-", "-", "-", "-", e.getMessage());
                 }
             }
         }

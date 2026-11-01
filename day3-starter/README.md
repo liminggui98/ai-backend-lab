@@ -4,36 +4,33 @@
 
 ## 交付物
 
-| 文件                               | 内容                                                    | 状态                                 |
-|------------------------------------|---------------------------------------------------------|--------------------------------------|
-| [`API对比表.md`](API对比表.md)     | 三家 API 对比                                           | ✅ A/B/C/D/E 已填，C 表为 3 次中位数 |
-| [`LLMClient.java`](LLMClient.java) | 零依赖统一客户端：多 provider、流式、读超时、usage 记账 | ✅ 可运行                            |
-| `.env.example`                     | provider 分开命名的 key                                 | ✅                                   |
-| [`github/`](github/)               | 4 份 README 成品：主页 + 3 个项目仓库                   | ✅ 可直接粘贴                        |
+| 文件                               | 内容                                                    | 
+|------------------------------------|---------------------------------------------------------|
+| [`API对比表.md`](API对比表.md)     | 三家 API 对比                                           |
+| [`LLMClient.java`](LLMClient.java) | 零依赖统一客户端：多 provider、流式、读超时、usage 记账 | 
+| `.env.example`                     | provider 分开命名的 key                                 | 
+| [`github/`](github/)               | 4 份 README 成品：主页 + 3 个项目仓库                   | 
 
 ## GitHub
 
-[`github/`](github/) 里的文件是 **成品**，复制过去就是对应仓库的 `README.md`：
-
-| 文件                                                           | 复制到哪                                     | 说明                          |
-|----------------------------------------------------------------|----------------------------------------------|-------------------------------|
-| [`github/profile-README.md`](github/profile-README.md)         | `liminggui98/liminggui98` 仓库的 `README.md` | 主页，含 8 周进度表与项目索引 |
-| [`github/rag-knowledge-base.md`](github/rag-knowledge-base.md) | 新建仓库 `rag-knowledge-base`                | 项目一（W3–W4）               |
-| [`github/agent-workflow.md`](github/agent-workflow.md)         | 新建仓库 `agent-workflow`                    | 项目二（W5）                  |
-| [`github/llm-gateway.md`](github/llm-gateway.md)               | 新建仓库 `llm-gateway`                       | 项目三（W6）                  |
+| 操作                                                     |
+|----------------------------------------------------------|
+| 新建仓库，`liminggui98/liminggui98`，写 `README.md` 文档 |
+| 新建仓库 `rag-knowledge-base`，写`README.md` 文档        |
+| 新建仓库 `agent-workflow`，写`README.md` 文档            |
+| 新建仓库  `llm-gateway`，写`README.md` 文档              |
 
 仓库本体的 `README.md` 已经更新（进度表、目录、运行方式）。
 
 ## 为什么要有 LLMClient
 
-Day 1 的 `HelloLLM.java` 只证明「能调通一次」。这个类解决的是「三家能当成一家用」：
+`HelloLLM.java` 只证明「能调通一次」。这个类解决的是「三家能当成一家用」：
 
 1. **provider 适配**：一份 `OpenAiCompatible` 实现，靠 `baseUrl + model + key` 区分三家，调用方拿到的永远是 `Reply`；
 2. **流式解析统一**：三家的 chunk 归一成 `Chunk{delta, reasoning, finishReason}`，推理模型的思考内容和答案分开；
 3. **超时归一**：`HttpRequest.timeout` 只管到响应头， **body 流另设读空闲看门狗**（Day 1 在百炼上卡过两分钟）；429 / 5xx
    退避重试；
-4. **usage 记账**：每次带回 prompt / completion / total，W6 的成本模型直接用这份数据。
-
+4. **usage 记账**：每次带回 prompt / completion / total，成本模型直接用这份数据。
 
 ## 运行
 
@@ -58,17 +55,11 @@ java LLMClient.java --provider all --chat  # 非流式，usage 更准
 输出长这样：
 
 ```
-provider  model               首token       总耗时    tokens(p/c/t)   tok/s
-------------------------------------------------------------------------
-RAG（检索增强生成）是一种让大语言模型在生成回答前先从外部知识库检索相关信息、再结合检索内容生成答案的技术，可提升回答的准确性和时效性。
-deepseek  deepseek-flash       879ms    1169ms         22/40/62   137.9
-zhipu     glm-4-flash          672ms    2269ms         24/46/70    28.8
+provider  model               首token       总耗时    tokens(p/c/t)   tok/s content.length reasoning.length
+---------------------------------------------------------------------------------------------------
+deepseek  deepseek-flash       512ms     820ms         22/36/58 116.9        62         0
+zhipu     glm-4-flash          606ms    1436ms         24/47/71 56.6        91         0
+bailian   qwen-plus            329ms    1614ms         30/57/87 44.4       112         0
 ```
 
 可选参数：`--prompt "..."`、`--idle-ms 20000`、`--max-tokens 1024`、`--chat`。
-
-## 已知限制
-
-- 流式模式下 `usage` 不一定有（看 provider 是否在尾帧返回），拿不到就标 `-`，成本核算用 `--chat` 的结果；
-- JSON 解析器只覆盖 OpenAI 兼容响应用到的子集，不追求通用性；
-- `--provider all` 是串行跑的，别用它做并发压测。
