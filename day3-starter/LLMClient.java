@@ -402,7 +402,7 @@ public final class LLMClient {
         add(providers, "deepseek",
                 env("DEEPSEEK_API_KEY"),
                 envOr("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-                envOr("DEEPSEEK_MODEL", "deepseek-chat"));
+                envOr("DEEPSEEK_MODEL", "deepseek-flash"));
 
         add(providers, "zhipu",
                 env("ZHIPU_API_KEY"),

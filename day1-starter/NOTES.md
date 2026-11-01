@@ -33,10 +33,6 @@
 | 智谱     | glm-4-flash    | 980.2 / 699.0 / 1782.2 ms   | 1883.1 / 1731.0 / 2588.9 ms |
 | 百炼     | qwen-plus      | 417.8 / 371.0 / 636.7 ms    | 1624.9 / 1636.5 / 1783.5 ms |
 
-差异：
-
-- 百炼是推理模型：先流 `reasoning_content`、思考结束才流 `content`。它的「首 token」取决于思考长度，和另外两家不可比。
-
 ## 三、今天亲眼确认的 3 个事实
 
 1. 流式每一帧都是 `chat.completion.chunk`，增量在 `choices[0].delta`；非流式的答案在 `choices[0].message.content`
@@ -96,7 +92,7 @@
 ### 3. 非流式响应里，答案藏在哪个路径？
 
 ```text
-choices[1,...,n-1].message.content
+choices[i].message.content，i=0..n-1
 ```
 
 - `n > 1` 时按 `choices[i].index` 取，不能默认只有一条；
@@ -122,13 +118,13 @@ print(resp.choices[0].message.content)  # 原始 JSON 即 choices[0].message.con
 
 **标准取值（OpenAI Chat Completions）**：
 
-| 值               | 含义                                                                                       | 客户端该做什么                                    |
-|------------------|--------------------------------------------------------------------------------------------|---------------------------------------------------|
-| `stop`           | 模型自然结束，或命中 `stop` 序列                                                           | 正常消费                                          |
-| `length`         | **token 预算耗尽**：达到 `max_tokens` / `max_completion_tokens`，或输入+输出触顶上下文窗口 | 内容不完整；别直接 `JSON.parse`，可提高上限或续写 |
-| `tool_calls`     | 模型发起工具调用                                                                           | 执行工具并回填 `tool` 消息                        |
-| `content_filter` | 被内容安全策略拦截，内容可能为空                                                           | 提示用户，不要原样重试                            |
-| `function_call`  | 旧版函数调用，**已废弃**                                                                   | 迁移到 `tool_calls`                               |
+| 值               | 含义                                                                                               | 客户端该做什么                                    |
+|------------------|----------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| `stop`           | 模型自然结束，或命中 `stop` 序列                                                                   | 正常消费                                          |
+| `length`         | **token 预算耗尽**：达到 `max_tokens` / `max_completion_tokens`，或生成阶段输入+输出触顶上下文窗口 | 内容不完整；别直接 `JSON.parse`，可提高上限或续写 |
+| `tool_calls`     | 模型发起工具调用                                                                                   | 执行工具并回填 `tool` 消息                        |
+| `content_filter` | 被内容安全策略拦截，内容可能为空                                                                   | 提示用户，不要原样重试                            |
+| `function_call`  | 旧版函数调用，**已废弃**                                                                           | 迁移到 `tool_calls`                               |
 
 **`length` 不是"文本长度"**，而是"**token 预算用尽**"：模型不是算到某个字数停的，是生成预算或上下文额度到顶被硬停。典型表现：句子说一半、JSON
 不闭合、代码截断。
@@ -193,7 +189,7 @@ completion_tokens = 800 → 800 / 1e6 × 0.60 = $0.00048
 
 | 变量       | 影响                                                                                                    |
 |------------|---------------------------------------------------------------------------------------------------------|
-| 缓存命中   | `prompt_tokens_details.cached_tokens` 通常按输入价的 10%–50% 计费                                       |
+| 缓存命中   | `prompt_tokens_details.cached_tokens`                                                                   |
 | 推理 token | `completion_tokens_details.reasoning_tokens` 计入输出，按输出价计费                                     |
 | `n > 1`    | 每个候选都产生 completion tokens，全部计费                                                              |
 | 流式       | 规范要求显式开启 `stream_options.include_usage: true`；本环境三家默认也会返回 `usage`，但别依赖这个默认 |
@@ -297,7 +293,7 @@ token"解释不成立。
 - 结果是： **同样信息量，中文的 token 数通常更高**。
 
 **量化参考**（DeepSeek 官方口径，[Token 用量计算](https://api-docs.deepseek.com/zh-cn/quick_start/token_usage/)）：1
-个英文字符 ≈ 0.3 token，1 个中文字符 ≈ 0.6 token。同字数下中文约 2 倍；中文句子字数通常更少，所以整体差距会缩小，但多数场景仍是中文更费。
+个英文字符 ≈ 0.3 token，1 个中文字符 ≈ 0.6 token。同字数下中文约 2 倍；如果中文表达只用不到一半字符数，中文反而可能更省。
 
 **实际影响与对策**：
 
