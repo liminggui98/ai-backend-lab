@@ -1,6 +1,6 @@
 # 学习内容
 
-> 当天交付： **三家 API 对比表 + `LLMClient.java`（多 provider 统一封装）+ GitHub 主页**。
+> 本次交付： **三家 API 对比表 + `LLMClient.java`（多 provider 统一封装）+ GitHub 主页**。
 
 ## 交付物
 
@@ -26,17 +26,15 @@
 
 1. **provider 适配**：一份 `OpenAiCompatible` 实现，靠 `baseUrl + model + key` 区分三家，调用方拿到的永远是 `Reply`；
 2. **流式解析统一**：三家的 chunk 归一成 `Chunk{delta, reasoning, finishReason}`，推理模型的思考内容和答案分开；
-3. **超时归一**：`HttpRequest.timeout` 只管到响应头， **body 流另设读空闲看门狗**（Day 1 在百炼上卡过两分钟）；429 / 5xx
+3. **超时归一**：`HttpRequest.timeout` 只管到响应头， **body 流另设读空闲看门狗**（之前在百炼上卡过两分钟）；429 / 5xx
    退避重试；
 4. **usage 记账**：每次带回 prompt / completion / total，成本模型直接用这份数据。
 
 ## 运行
 
-调用次数 = 每次运行跑 10 轮 × provider 数
+调用次数 = 每次运行跑 10 轮 × provider 数。以下命令在本目录执行：
 
 ```bash
-cd day3-starter
-
 # 1) 离线自检：不联网、不花钱，验证 JSON 解析和空帧处理
 java LLMClient.java --selftest
 #

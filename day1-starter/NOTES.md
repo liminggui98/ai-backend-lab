@@ -2,7 +2,7 @@
 
 ## 一、跑通了什么
 
-> > 运行 `HelloLLM.java` 前，复制 [.env.example](../day1-starter/.env.example) 为 .env，修改各模型对应的
+> > 运行 `HelloLLM.java` 前，复制 [.env.example](.env.example) 为 .env，修改各模型对应的
 > API_KEY（百炼需修改BASE_URL与API_KEY对应）。通过命令 `set -a; source .env; set +a;` 生效环境变量，在同一终端下运行
 > `java HelloLLM.java` 即可;
 
@@ -33,7 +33,7 @@
 | 智谱     | glm-4-flash    | 980.2 / 699.0 / 1782.2 ms   | 1883.1 / 1731.0 / 2588.9 ms |
 | 百炼     | qwen-plus      | 417.8 / 371.0 / 636.7 ms    | 1624.9 / 1636.5 / 1783.5 ms |
 
-## 三、今天亲眼确认的 3 个事实
+## 三、亲眼确认的 3 个事实
 
 1. 流式每一帧都是 `chat.completion.chunk`，增量在 `choices[0].delta`；非流式的答案在 `choices[0].message.content`
    。两者结构不同，不能拿同一套解析。
