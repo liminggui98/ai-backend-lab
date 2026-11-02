@@ -18,6 +18,6 @@ public record LLMOpenAIClientProperties(
      * @param apiKey  鉴权 key
      * @param model   模型名
      */
-    public record OpenAIClientConfig(String baseUrl, String apiKey, String model) {
+    public record OpenAIClientConfig(String baseUrl, String apiKey, String model, Long timeout, Float temperature) {
     }
 }

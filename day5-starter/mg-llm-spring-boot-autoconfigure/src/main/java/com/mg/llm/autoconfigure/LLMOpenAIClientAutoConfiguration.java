@@ -1,6 +1,7 @@
 package com.mg.llm.autoconfigure;
 
 import com.mg.llm.client.LLMOpenAIClient;
+import com.mg.llm.client.LLMOpenAIClientOptions;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -39,6 +40,15 @@ public class LLMOpenAIClientAutoConfiguration {
     }
 
     private static LLMOpenAIClient client(String provider, LLMOpenAIClientProperties.OpenAIClientConfig config) {
-        return new LLMOpenAIClient(provider, config.model(), config.baseUrl(), config.apiKey());
+        LLMOpenAIClientOptions llmOpenAIClientOptions = LLMOpenAIClientOptions.builder()
+                .provider(provider)
+                .apiKey(config.apiKey())
+                .baseUrl(config.baseUrl())
+                .model(config.model())
+                .timeout(config.timeout())
+                .temperature(config.temperature())
+                .build();
+
+        return new LLMOpenAIClient(llmOpenAIClientOptions);
     }
 }

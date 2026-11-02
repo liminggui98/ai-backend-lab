@@ -30,7 +30,7 @@ public class ChatCompletionRequest {
      * @param model 模型名
      * @return OpenAI 兼容协议的 chat/completions 请求体
      */
-    public String getCompletionChatReqText(String model) {
+    public String getCompletionChatReqText(String model, Float temperature) {
         JSONArray messages = new JSONArray();
         if (systemMessage != null) {
             messages.add(new JSONObject()
@@ -47,8 +47,11 @@ public class ChatCompletionRequest {
         payload.put("model", model);
         payload.put("messages", messages);
         payload.put("stream", stream);
-        payload.put("top_p", 0.9);
-        payload.put("temperature", 1);
+
+        if (temperature != null) {
+            payload.put("temperature", temperature);
+        }
+
         return payload.toJSONString();
     }
 }

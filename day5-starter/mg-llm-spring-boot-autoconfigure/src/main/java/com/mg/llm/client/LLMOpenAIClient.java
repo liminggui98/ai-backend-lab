@@ -3,6 +3,7 @@ package com.mg.llm.client;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.mg.llm.result.*;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.net.URI;
@@ -22,9 +23,11 @@ import java.util.stream.Stream;
  *
  * <p>不可变：连接配置在构造时固定，{@link HttpClient} 可安全复用。
  */
+@Getter
 public class LLMOpenAIClient {
+    private LLMOpenAIClientOptions clientOptions;
 
-    private final HttpClient client;
+    private HttpClient client;
 
     private final String provider;
 
@@ -34,23 +37,26 @@ public class LLMOpenAIClient {
 
     private final String apiKey;
 
-    public LLMOpenAIClient(String provider, String model, String baseUrl, String apiKey) {
-        this.provider = provider;
-        this.model = model;
-        this.baseUrl = baseUrl;
-        this.apiKey = apiKey;
+    private final Long timeout;
 
+    private final float temperature;
+
+    public LLMOpenAIClient(LLMOpenAIClientOptions clientOptions) {
+        this.clientOptions = clientOptions;
+        this.provider = clientOptions.getProvider();
+        this.model = clientOptions.getModel();
+        this.baseUrl = clientOptions.getBaseUrl();
+        this.apiKey = clientOptions.getApiKey();
+        this.timeout = clientOptions.getTimeout() != null ? clientOptions.getTimeout() : 10L;
+        this.temperature = clientOptions.getTemperature() != null ? clientOptions.getTemperature() : 0.7f;
+
+        createClient();
+    }
+
+    private void createClient() {
         client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
-    }
-
-    public String getProvider() {
-        return provider;
-    }
-
-    public String getModel() {
-        return model;
     }
 
     public LLMResult chatCompletion(ChatCompletionRequest chatCompletionRequest) {
@@ -62,7 +68,7 @@ public class LLMOpenAIClient {
         }
 
         String prompt = promptOf(chatCompletionRequest);
-        String requestStr = chatCompletionRequest.getCompletionChatReqText(model);
+        String requestStr = chatCompletionRequest.getCompletionChatReqText(model, temperature);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -70,7 +76,7 @@ public class LLMOpenAIClient {
                 .header("Content-Type", "application/json")
                 .header("Accept", chatCompletionRequest.getStream() ? "text/event-stream" : "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestStr))
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.ofSeconds(timeout))
                 .build();
 
         if (chatCompletionRequest.getStream()) {
@@ -134,7 +140,9 @@ public class LLMOpenAIClient {
         }
 
         if (response.statusCode() != 200) {
-            return new Broken(String.valueOf(response.statusCode()), "http_error", prompt);
+            // 获取响应内容中的错误
+            String err = response.body().limit(20).reduce("", (a, b) -> a + b + "\n");
+            return new Broken(String.valueOf(response.statusCode()), "http_error", err);
         }
 
         StringBuilder content = new StringBuilder();
