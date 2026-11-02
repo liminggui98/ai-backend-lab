@@ -1,10 +1,12 @@
+package com.mg.llm;
+
 import java.util.Optional;
 
 /**
  * 四段小练习（LLM 调用结果四态版）：
  * <ul>
  *   <li>record + 紧凑构造器校验：{@link Usage} / {@code Ok} / {@code RateLimited} / {@code TimedOut} / {@code Broken}</li>
- *   <li>sealed + 穷尽 switch：{@link LlmResult} 四个实现，{@code httpStatus} 不写 default</li>
+ *   <li>sealed + 穷尽 switch：{@link LLMResult} 四个实现，{@code httpStatus} 不写 default</li>
  *   <li>模式匹配：type pattern / record pattern（含嵌套）/ when 守卫，见 {@code advice}</li>
  *   <li>文本块 prompt：{@code retryPrompt} 带 {@code %s} 占位与 {@code stripTrailing}</li>
  * </ul>
@@ -20,7 +22,7 @@ public class Day5Starter {
      * <p>行为（{@link #retryable()}、{@link #content()}、{@link #isSuccess()}）走多态，
      * 调用方不需要 switch；只有「必须穷尽」的边界（HTTP 映射、给用户的建议）才做分派。
      */
-    public sealed interface LlmResult permits Ok, RateLimited, TimedOut, Broken {
+    public sealed interface LLMResult {
 
         /**
          * 是否值得重试。
@@ -53,7 +55,7 @@ public class Day5Starter {
          * @param r 任意一种调用结果
          * @return 200 / 429 / 504 / 服务方原始状态码（400–599）
          */
-        static int httpStatus(LlmResult r) {
+        static int httpStatus(LLMResult r) {
             return switch (r) {
                 case Ok ignored -> 200;
                 case RateLimited ignored -> 429;
@@ -70,7 +72,7 @@ public class Day5Starter {
          * @param r 任意一种调用结果
          * @return 一句中文建议
          */
-        static String advice(LlmResult r) {
+        static String advice(LLMResult r) {
             return switch (r) {
                 // 嵌套 record pattern：一次解到 Ok 与内层 Usage 的组件；when 只做判定，不参与穷尽性
                 case Ok(var ignored, Usage(var promptTok, var completionTok), var ms) when ms > 3000 ->
@@ -97,7 +99,7 @@ public class Day5Starter {
          * @param failed   上一次失败的结果，其建议会作为失败原因写进 prompt
          * @return 去掉尾部空白的多行 prompt
          */
-        static String retryPrompt(String question, LlmResult failed) {
+        static String retryPrompt(String question, LLMResult failed) {
             return """
                     你是客服助手。上一次调用失败了，原因：%s
                     请重新回答下面的问题，只输出答案，不要解释：
@@ -134,7 +136,7 @@ public class Day5Starter {
      * @param usage        token 用量；null 归一为 0/0
      * @param firstTokenMs 首 token 耗时（毫秒）；&lt; 0 表示未测到（非流式）
      */
-    record Ok(String text, Usage usage, long firstTokenMs) implements LlmResult {
+    record Ok(String text, Usage usage, long firstTokenMs) implements LLMResult {
         Ok {
             if (text == null || text.isBlank()) {
                 throw new IllegalArgumentException("text 不能为空");
@@ -164,7 +166,7 @@ public class Day5Starter {
      * @param retryAfter 建议等待秒数，不能为负
      * @param provider   哪一家 provider，用于降级决策；构造时 trim 并转小写
      */
-    record RateLimited(int retryAfter, String provider) implements LlmResult {
+    record RateLimited(int retryAfter, String provider) implements LLMResult {
         RateLimited {
             if (retryAfter < 0) {
                 throw new IllegalArgumentException("retryAfter 不能为负：" + retryAfter);
@@ -188,7 +190,7 @@ public class Day5Starter {
      * @param waited   本次已等待秒数
      * @param attempts 已尝试次数，取值 0..3
      */
-    record TimedOut(int waited, int attempts) implements LlmResult {
+    record TimedOut(int waited, int attempts) implements LLMResult {
         TimedOut {
             if (waited < 0) {
                 throw new IllegalArgumentException("waited 不能为负：" + waited);
@@ -212,7 +214,7 @@ public class Day5Starter {
      * @param code   业务错误码
      * @param detail 错误详情，写日志用，不含密钥；null 归一为空串
      */
-    record Broken(int status, int code, String detail) implements LlmResult {
+    record Broken(int status, int code, String detail) implements LLMResult {
         Broken {
             if (status < 400 || status > 599) {
                 throw new IllegalArgumentException("status 必须在 400..599：" + status);
@@ -236,7 +238,7 @@ public class Day5Starter {
     public static void main(String[] args) {
         var usage = new Usage(100, 20);
 
-        LlmResult[] samples = {
+        LLMResult[] samples = {
                 new Ok("你好啊", usage, 1000L),
                 new Ok("你好啊", usage, 5000L),
                 new RateLimited(30, " ZHIPU "),
@@ -248,16 +250,16 @@ public class Day5Starter {
         };
 
         for (int i = 0; i < samples.length; i++) {
-            LlmResult r = samples[i];
+            LLMResult r = samples[i];
             System.out.printf("%d %-12s http=%-3d retry=%-5b success=%-5b %s%n",
-                    i, r.getClass().getSimpleName(), LlmResult.httpStatus(r),
-                    r.retryable(), r.isSuccess(), LlmResult.advice(r));
+                    i, r.getClass().getSimpleName(), LLMResult.httpStatus(r),
+                    r.retryable(), r.isSuccess(), LLMResult.advice(r));
         }
 
         System.out.printf("%n成功态正文：%s%n%n", samples[0].content().orElse(""));
 
         System.out.println("---- 失败后重问的 prompt ----");
-        System.out.println(LlmResult.retryPrompt("怎么退货", new RateLimited(30, "zhipu")));
+        System.out.println(LLMResult.retryPrompt("怎么退货", new RateLimited(30, "zhipu")));
         System.out.println();
 
         System.out.println("---- 不变量：非法构造必须被拒绝 ----");
