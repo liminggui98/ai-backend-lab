@@ -2,11 +2,7 @@ package com.mg.llm.client;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.mg.llm.result.Broken;
-import com.mg.llm.result.ClientException;
-import com.mg.llm.result.LLMResult;
-import com.mg.llm.result.Ok;
-import com.mg.llm.result.Usage;
+import com.mg.llm.result.*;
 
 import java.io.IOException;
 import java.net.URI;

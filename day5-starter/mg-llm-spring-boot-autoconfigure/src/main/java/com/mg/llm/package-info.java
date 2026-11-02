@@ -1,4 +1,4 @@
 /**
- * 重写前几天完成的纯 java llm 调用
+ * 自己封装的 llm api client
  */
 package com.mg.llm;
