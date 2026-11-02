@@ -1,4 +1,4 @@
-package com.mg.llm;
+package com.mg;
 
 import java.util.Optional;
 
