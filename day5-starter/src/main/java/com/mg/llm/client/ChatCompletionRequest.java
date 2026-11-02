@@ -25,8 +25,8 @@ public class ChatCompletionRequest {
         return """
                 {
                     "model": "%s",
-                    "message": %s,
-                    "stream": "%s",
+                    "messages": %s,
+                    "stream": %b,
                     "top_p": 0.9,
                     "temperature": 1
                 }
@@ -41,7 +41,7 @@ public class ChatCompletionRequest {
             sb.append("""
                     {
                         "role": "%s",
-                        "content": "%s" 
+                        "content": "%s"
                     }
                     """.formatted(systemMessage.role(), systemMessage.content()));
         }
