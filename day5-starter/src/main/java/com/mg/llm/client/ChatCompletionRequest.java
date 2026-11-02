@@ -3,7 +3,7 @@ package com.mg.llm.client;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.mg.llm.prompt.Message;
+import com.mg.llm.message.Message;
 import lombok.Data;
 
 @Data

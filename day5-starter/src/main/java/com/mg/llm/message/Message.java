@@ -1,4 +1,4 @@
-package com.mg.llm.prompt;
+package com.mg.llm.message;
 
 public sealed interface Message permits SystemMessage, UserMessage {
     String role();

@@ -1,4 +1,4 @@
-package com.mg.llm.prompt;
+package com.mg.llm.message;
 
 public record UserMessage(String content) implements Message {
     @Override

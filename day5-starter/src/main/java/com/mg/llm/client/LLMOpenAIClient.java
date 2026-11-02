@@ -2,8 +2,11 @@ package com.mg.llm.client;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.mg.llm.result.*;
-import lombok.Data;
+import com.mg.llm.result.Broken;
+import com.mg.llm.result.ClientException;
+import com.mg.llm.result.LLMResult;
+import com.mg.llm.result.Ok;
+import com.mg.llm.result.Usage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,21 +21,22 @@ import java.util.stream.Stream;
 /**
  * OpenAI 兼容协议客户端。
  *
- * <p>统一返回 {@link LLMResult}（成功 {@link Ok} / 限流 {@link RateLimited} / 超时 {@link TimedOut} /
- * 服务方错误 {@link Broken} / 客户端异常 {@link ClientException}），调用方据此判断是否可重试。
+ * <p>统一返回 {@link LLMResult}（成功 {@link Ok} / 服务方错误 {@link Broken} /
+ * 客户端异常 {@link ClientException}），调用方据此判断是否可重试。
+ *
+ * <p>不可变：连接配置在构造时固定，{@link HttpClient} 可安全复用。
  */
-@Data
 public class LLMOpenAIClient {
 
     private final HttpClient client;
 
-    private String provider;
+    private final String provider;
 
-    private String model;
+    private final String model;
 
-    private String baseUrl;
+    private final String baseUrl;
 
-    private String apiKey;
+    private final String apiKey;
 
     public LLMOpenAIClient(String provider, String model, String baseUrl, String apiKey) {
         this.provider = provider;
@@ -43,6 +47,14 @@ public class LLMOpenAIClient {
         client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public String getModel() {
+        return model;
     }
 
     public LLMResult chatCompletion(ChatCompletionRequest chatCompletionRequest) {
