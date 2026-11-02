@@ -13,6 +13,9 @@ import java.util.Optional;
  *
  * <p>边界实验：给 {@code permits} 多加一个实现，{@code httpStatus} 与 {@code advice}
  * 会同时报「switch 表达式不包含所有可能的输入值」。
+ *
+ * @author LiMingGui98
+ * @since 2026-10-30
  */
 public class LlmResultExercises {
 

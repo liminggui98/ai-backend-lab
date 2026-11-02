@@ -1,4 +1,7 @@
--- Day 1：只验证 pgvector 能装上。
+-- 作者：LiMingGui98
+-- 创建日期：2026-10-28
+
+-- 只验证 pgvector 能装上。
 -- 真正的表结构（documents / chunks / embeddings）在 W3 再设计。
 CREATE
 EXTENSION IF NOT EXISTS vector;

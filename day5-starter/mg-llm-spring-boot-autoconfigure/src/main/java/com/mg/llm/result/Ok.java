@@ -6,6 +6,8 @@ package com.mg.llm.result;
  * @param prompt 提示
  * @param body   回答
  * @param usage  使用情况
+ * @author LiMingGui98
+ * @since 2026-11-02
  */
 public record Ok(String prompt, String body, Usage usage) implements LLMResult {
     public Ok {

@@ -8,6 +8,9 @@ import java.lang.annotation.*;
  * 要求「属性存在且非空白」才装配，与 Boot 原生
  * {@link org.springframework.boot.autoconfigure.condition.ConditionalOnProperty} 的区别：
  * 后者在属性为空字符串（例如 {@code ${VAR:}} 缺省）时也会命中，导致没配 key 也创建 client。
+ *
+ * @author LiMingGui98
+ * @since 2026-11-02
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

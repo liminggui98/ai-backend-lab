@@ -15,6 +15,9 @@ import org.springframework.context.ApplicationContext;
  *
  * <p>注意：这只是演示用法，不属于 starter 本身。正式发布的 starter 应把
  * 示例移到独立的 samples 模块，不要在 {@code src/main} 里放 {@code @SpringBootApplication}。
+ *
+ * @author LiMingGui98
+ * @since 2026-11-02
  */
 @Log
 @SpringBootApplication

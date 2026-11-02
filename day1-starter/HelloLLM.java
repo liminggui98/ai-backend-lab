@@ -20,6 +20,9 @@ import java.util.stream.Stream;
  * export ZHIPU_API_KEY=sk-xxx ZHIPU_MODEL=glm-4-flash ZHIPU_BASE_URL=https://open.bigmodel.cn/api/paas/v4
  * <p>
  * java HelloLLM.java
+ *
+ * @author LiMingGui98
+ * @since 2026-10-28
  */
 public class HelloLLM {
     /**
@@ -104,6 +107,9 @@ public class HelloLLM {
         }
     }
 
+    /**
+     * 入口：打印表头后跑 10 轮压测，每轮依次执行流式与非流式调用。
+     */
     public static void main(String[] args) throws IOException, InterruptedException {
         printHeader();
         // 10 轮压测：每轮流式 + 非流式

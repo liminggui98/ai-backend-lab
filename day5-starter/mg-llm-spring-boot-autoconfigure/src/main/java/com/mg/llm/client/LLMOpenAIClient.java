@@ -22,9 +22,12 @@ import java.util.stream.Stream;
  * 客户端异常 {@link ClientException}），调用方据此判断是否可重试。
  *
  * <p>不可变：连接配置在构造时固定，{@link HttpClient} 可安全复用。
+ *
+ * @author LiMingGui98
+ * @since 2026-11-02
  */
 public class LLMOpenAIClient {
-    private HttpClient client;
+    private final HttpClient client;
 
     @Getter
     private final String provider;
@@ -36,27 +39,65 @@ public class LLMOpenAIClient {
 
     private final String apiKey;
 
-    private final Long timeout;
+    private final long requestTimeout;
+
+    private final long connectTimeout;
 
     private final float temperature;
 
     public LLMOpenAIClient(LLMOpenAIClientOptions options) {
-        this.provider = options.getProvider();
-        this.model = options.getModel();
-        this.baseUrl = options.getBaseUrl();
-        this.apiKey = options.getApiKey();
-        this.timeout = options.getTimeout() != null ? options.getTimeout() : 10L;
-        this.temperature = options.getTemperature() != null ? options.getTemperature() : 0.7f;
+        String provider = options.getProvider();
+        String model = options.getModel();
+        String baseUrl = options.getBaseUrl();
+        String apiKey = options.getApiKey();
+        long requestTimeout = options.getRequestTimeout() != null ? options.getRequestTimeout() : 60L;
+        long connectTimeout = options.getConnectTimeout() != null ? options.getConnectTimeout() : 10L;
+        float temperature = options.getTemperature() != null ? options.getTemperature() : 0.7f;
 
-        createClient();
+        requireNonBlank("provider", provider);
+        requireNonBlank("model", model);
+        requireNonBlank("baseUrl", baseUrl);
+        requireNonBlank("apiKey", apiKey);
+        requirePositive("requestTimeout", requestTimeout);
+        requirePositive("connectTimeout", connectTimeout);
+        if (temperature < 0 || temperature > 2) {
+            throw new IllegalArgumentException("temperature 必须在 0..2：" + temperature);
+        }
+
+        this.provider = provider;
+        this.model = model;
+        this.baseUrl = baseUrl;
+        this.apiKey = apiKey;
+        this.requestTimeout = requestTimeout;
+        this.connectTimeout = connectTimeout;
+        this.temperature = temperature;
+        this.client = createClient(connectTimeout);
     }
 
-    private void createClient() {
-        client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(timeout))
+    private static HttpClient createClient(long connectTimeout) {
+        return HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(connectTimeout))
                 .build();
     }
 
+    private static void requireNonBlank(String name, String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(name + " 不能为空");
+        }
+    }
+
+    private static void requirePositive(String name, long value) {
+        if (value <= 0) {
+            throw new IllegalArgumentException(name + " 必须为正数：" + value);
+        }
+    }
+
+    /**
+     * 发起一次 chat/completions 调用，按请求是否流式选择流式或非流式路径。
+     *
+     * @param chatCompletionRequest 请求体（system / user 消息与是否流式）
+     * @return 统一结果：成功为 {@link Ok}，失败为 {@link Broken} 或 {@link ClientException}
+     */
     public LLMResult chatCompletion(ChatCompletionRequest chatCompletionRequest) {
         URI uri;
         try {
@@ -74,7 +115,7 @@ public class LLMOpenAIClient {
                 .header("Content-Type", "application/json")
                 .header("Accept", chatCompletionRequest.getStream() ? "text/event-stream" : "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestStr))
-                .timeout(Duration.ofSeconds(timeout))
+                .timeout(Duration.ofSeconds(requestTimeout))
                 .build();
         if (chatCompletionRequest.getStream()) {
             return streamRequest(prompt, request);

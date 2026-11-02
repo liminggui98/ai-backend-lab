@@ -52,6 +52,9 @@ import java.util.stream.Stream;
  *   BAILIAN_API_KEY=sk-ws-xxx                  （必填 BAILIAN_BASE_URL，空间级 key 只能配空间级域名）
  *   BAILIAN_BASE_URL=xxx
  * </pre>
+ *
+ * @author LiMingGui98
+ * @since 2026-10-29
  */
 public final class LLMClient {
 
@@ -429,6 +432,10 @@ public final class LLMClient {
     // 四、入口
     // ==================================================================
 
+    /**
+     * 命令行入口：支持 {@code --selftest} 离线自检，以及 {@code --provider} / {@code --prompt} /
+     * {@code --chat} / {@code --idle-ms} / {@code --max-tokens} 参数，默认跑 10 轮流式调用。
+     */
     public static void main(String[] args) {
         if (hasFlag(args, "--selftest")) {
             selftest();

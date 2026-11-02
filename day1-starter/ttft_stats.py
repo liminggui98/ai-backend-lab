@@ -6,6 +6,9 @@
 
 输出：按 provider/model 分组，只统计"是否流式=是"的行，
       分别计算首 token 与总耗时的平均值、P50、P90（统一毫秒）。
+
+作者：LiMingGui98
+创建日期：2026-11-01
 """
 import statistics
 import sys
