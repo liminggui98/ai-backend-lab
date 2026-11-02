@@ -111,7 +111,7 @@ llm.deepseek.api-key=${DEEPSEEK_API_KEY:}
 | 自定义条件 | `ConditionalOnNonBlankProperty` + `OnNonBlankPropertyCondition`                                       | 注解只声明属性名，判定逻辑在 `Condition` 里                                           |
 | 配置绑定   | `LLMOpenAIClientProperties`（record，嵌套 `OpenAIClientConfig` record）                               | `prefix = "llm"`，构造器绑定，`pom.xml` 带 `configuration-processor`                  |
 | 用户覆盖   | 每个 `@Bean` 上的 `@ConditionalOnMissingBean(name = …)`                                               | 使用者定义同名 Bean 即接管                                                            |
-| 外部配置   | `application.properties` 的 `${ENV:default}` + `spring.config.import=optional:file:.env[.properties]` | `.env` 按 properties 格式导入、缺失时跳过；`.env` 不入库                              |
+| 外部配置   | `application.properties` 的 `${ENV:default}` + `spring.config.import=optional:file:.env[.properties]` | `src/main/resources/.env` 按 properties 格式导入、缺失时跳过；`src/main/resources/.env` 不入库                              |
 | 冒烟示例   | `com.mg.SampleApplication`                                                                            | 只是演示，不属于 starter 本体（javadoc 已注明应移到 samples 模块）                    |
 
 ## 自测题
