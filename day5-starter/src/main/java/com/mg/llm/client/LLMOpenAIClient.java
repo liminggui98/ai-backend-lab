@@ -2,6 +2,7 @@ package com.mg.llm.client;
 
 import com.mg.llm.prompt.Message;
 import com.mg.llm.result.*;
+import lombok.Data;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 /**
  * OpenAI 兼容协议客服端
  */
+@Data
 public class LLMOpenAIClient {
     private final HttpClient client;
 
