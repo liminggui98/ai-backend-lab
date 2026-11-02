@@ -1,11 +1,11 @@
 package com.mg.llm.result;
 
 /**
- * 大模型 API 一次调用结果
+ * 一次成功的 LLM 调用结果。
  *
  * @param prompt 提示
  * @param body   回答
- * @param usage  使用情况
+ * @param usage  token 用量
  * @author LiMingGui98
  * @since 2026-11-02
  */
