@@ -1,6 +1,5 @@
 package com.mg;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.mg.llm.client.ChatCompletionRequest;
 import com.mg.llm.client.LLMOpenAIClient;
 import com.mg.llm.message.Message;
@@ -32,7 +31,7 @@ public class SampleApplication {
                     ChatCompletionRequest request = new ChatCompletionRequest(systemMessage, userMessage, false);
                     LLMResult llmResult = llmOpenAIClient.chatCompletion(request);
 
-                    log.info(JSONObject.toJSONString(llmResult));
+                    log.info("provider: %s, model: %s, 调用结果：%s".formatted(llmOpenAIClient.getProvider(), llmOpenAIClient.getModel(), llmResult));
                 });
     }
 }

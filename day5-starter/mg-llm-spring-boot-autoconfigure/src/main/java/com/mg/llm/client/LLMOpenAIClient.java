@@ -23,14 +23,13 @@ import java.util.stream.Stream;
  *
  * <p>不可变：连接配置在构造时固定，{@link HttpClient} 可安全复用。
  */
-@Getter
 public class LLMOpenAIClient {
-    private LLMOpenAIClientOptions clientOptions;
-
     private HttpClient client;
 
+    @Getter
     private final String provider;
 
+    @Getter
     private final String model;
 
     private final String baseUrl;
@@ -41,21 +40,20 @@ public class LLMOpenAIClient {
 
     private final float temperature;
 
-    public LLMOpenAIClient(LLMOpenAIClientOptions clientOptions) {
-        this.clientOptions = clientOptions;
-        this.provider = clientOptions.getProvider();
-        this.model = clientOptions.getModel();
-        this.baseUrl = clientOptions.getBaseUrl();
-        this.apiKey = clientOptions.getApiKey();
-        this.timeout = clientOptions.getTimeout() != null ? clientOptions.getTimeout() : 10L;
-        this.temperature = clientOptions.getTemperature() != null ? clientOptions.getTemperature() : 0.7f;
+    public LLMOpenAIClient(LLMOpenAIClientOptions options) {
+        this.provider = options.getProvider();
+        this.model = options.getModel();
+        this.baseUrl = options.getBaseUrl();
+        this.apiKey = options.getApiKey();
+        this.timeout = options.getTimeout() != null ? options.getTimeout() : 10L;
+        this.temperature = options.getTemperature() != null ? options.getTemperature() : 0.7f;
 
         createClient();
     }
 
     private void createClient() {
         client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(timeout))
                 .build();
     }
 
@@ -78,7 +76,6 @@ public class LLMOpenAIClient {
                 .POST(HttpRequest.BodyPublishers.ofString(requestStr))
                 .timeout(Duration.ofSeconds(timeout))
                 .build();
-
         if (chatCompletionRequest.getStream()) {
             return streamRequest(prompt, request);
         } else {

@@ -1,27 +1,29 @@
 # 学习内容
 
-> 本次交付：**Java 21 四段练习（`LlmResultExercises.java`）+ `mg-llm-spring-boot-starter`（自动配置模块 + 薄壳）**。
-> 专题笔记：[Java 21：新语法与边界.md](Java%2021：新语法与边界.md) · [Spring Boot 3：自动配置.md](Spring%20Boot%203：自动配置.md)
+> 本次交付： **Java 21 四段练习（`LlmResultExercises.java`）+ `mg-llm-spring-boot-starter`（自动配置模块 + 薄壳）**。
+>
+专题笔记：[Java 21：新语法与边界.md](Java%2021：新语法与边界.md) · [Spring Boot 3：自动配置.md](Spring%20Boot%203：自动配置.md)
 >
 > 时间：Java 21 部分 2026-10-30；Starter 部分 2026-11-02。
 
 ## 0. 目标
 
 > 用 record / sealed / 模式匹配 / 文本块，把 LLM 调用的返回值重写一遍；<br/>
-> 把之前的多 provider 客户端重写成 Spring Boot 版，再包成标准 Starter：`.imports` 注册、条件装配、record 配置绑定、用户可覆盖；<br/>
+> 把之前的多 provider 客户端重写成 Spring Boot 版，再包成标准 Starter：`.imports` 注册、条件装配、record
+> 配置绑定、用户可覆盖；<br/>
 > 不碰虚拟线程，不追 preview 特性。
 
 ## 1. 交付物
 
-| 文件 / 目录                                                                         | 内容                                                                                       |
-|-------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| [`LlmResultExercises.java`](src/main/java/com/mg/LlmResultExercises.java)            | 287 行零依赖练习：四态 `LLMResult` + 两处穷尽 switch + 嵌套 record pattern + 文本块 prompt |
-| [`mg-llm-spring-boot-autoconfigure/`](mg-llm-spring-boot-autoconfigure/)             | 自动配置模块：`@AutoConfiguration`、record 配置绑定、自定义条件、`.imports`                |
-| [`mg-llm-spring-boot-starter/`](mg-llm-spring-boot-starter/)                         | 薄壳模块：只依赖 autoconfigure，使用方引一个坐标即可                                       |
-| [`application.properties`](src/main/resources/application.properties)                | 三家 provider 的 `base-url / api-key / model`，`${ENV:default}` 兜底                       |
-| [`.env.example`](.env.example)                                                       | 环境变量清单（真实 `.env` 不入库）                                                         |
-| [`Java 21：新语法与边界.md`](Java%2021：新语法与边界.md)                             | 语言特性、四段练习落点、实测与边界实验                                                     |
-| [`Spring Boot 3：自动配置.md`](Spring%20Boot%203：自动配置.md)                        | 自动配置链路、条件装配、本仓库对照、坑位                                                   |
+| 文件 / 目录                                                               | 内容                                                                                       |
+|---------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| [`LlmResultExercises.java`](src/main/java/com/mg/LlmResultExercises.java) | 287 行零依赖练习：四态 `LLMResult` + 两处穷尽 switch + 嵌套 record pattern + 文本块 prompt |
+| [`mg-llm-spring-boot-autoconfigure/`](mg-llm-spring-boot-autoconfigure/)  | 自动配置模块：`@AutoConfiguration`、record 配置绑定、自定义条件、`.imports`                |
+| [`mg-llm-spring-boot-starter/`](mg-llm-spring-boot-starter/)              | 薄壳模块：只依赖 autoconfigure，使用方引一个坐标即可                                       |
+| [`application.properties`](src/main/resources/application.properties)     | 三家 provider 的 `base-url / api-key / model`，`${ENV:default}` 兜底                       |
+| [`.env.example`](.env.example)                                            | 环境变量清单（真实 `.env` 不入库）                                                         |
+| [`Java 21：新语法与边界.md`](Java%2021：新语法与边界.md)                  | 语言特性、四段练习落点、实测与边界实验                                                     |
+| [`Spring Boot 3：自动配置.md`](Spring%20Boot%203：自动配置.md)            | 自动配置链路、条件装配、本仓库对照、坑位                                                   |
 
 ## 2. 结构：三个 pom，不是 reactor
 
@@ -114,11 +116,11 @@ java -cp "target/classes:$(cat target/cp.txt)" com.mg.SampleApplication
 
 用临时验证类（未入库）打印 `getBeansOfType(LLMOpenAIClient.class)`：
 
-| 场景                 | 启动参数                                        | client Bean | 说明                                                          |
-|----------------------|-------------------------------------------------|-------------|---------------------------------------------------------------|
-| key 全空             | 三家 `--llm.*.api-key=`                         | 0           | 条件不命中；`Properties` 仍绑定，`base-url / model` 走默认值  |
-| 三家给假 key         | `--llm.*.api-key=fake`，百炼另给 `base-url`     | 3           | `deepseekClient / zhipuClient / bailianClient`                |
-| 用户自定义同名 Bean  | 同上 + 自定义 `deepseekClient`                  | 3           | 自定义的 `provider=user-custom` 接管，另两家仍自动装配         |
+| 场景                | 启动参数                                    | client Bean | 说明                                                         |
+|---------------------|---------------------------------------------|-------------|--------------------------------------------------------------|
+| key 全空            | 三家 `--llm.*.api-key=`                     | 0           | 条件不命中；`Properties` 仍绑定，`base-url / model` 走默认值 |
+| 三家给假 key        | `--llm.*.api-key=fake`，百炼另给 `base-url` | 3           | `deepseekClient / zhipuClient / bailianClient`               |
+| 用户自定义同名 Bean | 同上 + 自定义 `deepseekClient`              | 3           | 自定义的 `provider=user-custom` 接管，另两家仍自动装配       |
 
 空串误命中实验（同一个属性，两个条件）：
 

@@ -5,14 +5,14 @@
 
 ## 0. 先看这 6 行
 
-| 结论                                                 | 本仓库证据                                                                     |
-|------------------------------------------------------|--------------------------------------------------------------------------------|
-| record 的价值是构造期校验，不是省 getter             | 5 条非法构造在 `new` 时被拒；null usage 归一为 `0/0`，text 自动 trim           |
-| sealed + 不写 `default` = 编译期穷尽检查             | 加第 5 个实现 `Cached`，`httpStatus`、`advice` 两处 switch 同时报错            |
-| 写 `default` 等于关掉穷尽性                          | 先写 `default -> "无建议"` 再加状态，编译器一声不吭                            |
-| 模式匹配按「数据形状」分派，不按类型强转             | `case Ok(var ignored, Usage(var p, var c), var ms)` 一次解到嵌套              |
-| `when` 只做筛选，不参与穷尽性                        | 同一状态两档：守卫分支在前、无守卫兜底在后；顺序反了 dominated 编译失败        |
-| record 不是万能                                      | JPA 实体 / 数值语义 / 引用不可变，三个反例见 §6                                |
+| 结论                                     | 本仓库证据                                                              |
+|------------------------------------------|-------------------------------------------------------------------------|
+| record 的价值是构造期校验，不是省 getter | 5 条非法构造在 `new` 时被拒；null usage 归一为 `0/0`，text 自动 trim    |
+| sealed + 不写 `default` = 编译期穷尽检查 | 加第 5 个实现 `Cached`，`httpStatus`、`advice` 两处 switch 同时报错     |
+| 写 `default` 等于关掉穷尽性              | 先写 `default -> "无建议"` 再加状态，编译器一声不吭                     |
+| 模式匹配按「数据形状」分派，不按类型强转 | `case Ok(var ignored, Usage(var p, var c), var ms)` 一次解到嵌套        |
+| `when` 只做筛选，不参与穷尽性            | 同一状态两档：守卫分支在前、无守卫兜底在后；顺序反了 dominated 编译失败 |
+| record 不是万能                          | JPA 实体 / 数值语义 / 引用不可变，三个反例见 §6                         |
 
 ## 1. 名词表
 
@@ -40,7 +40,8 @@
 
 - 它是 `final` 类，隐式继承 `java.lang.Record`， **不能被继承**，也不能继承别的类（可以实现接口）。
 - 组件自动生成：`private final` 字段、同名访问器（`delta()`，不是 `getDelta()`）、`equals`/`hashCode`/`toString`。
-  `toString` 直接打出组件名，日志里可读：`OpenAIClientConfig[baseUrl=https://api.deepseek.com, apiKey=, model=deepseek-flash]`。
+  `toString` 直接打出组件名，日志里可读：
+  `OpenAIClientConfig[baseUrl=https://api.deepseek.com, apiKey=, model=deepseek-flash]`。
 - 状态只能等于构造参数：不能声明额外的实例字段；可以有静态字段、静态方法、普通方法、实现接口。
 - 紧凑构造器用来校验 / 归一（null 转空串、trim、补默认值）， **规范构造器只能有一个**；里面只能改参数，不能写
   `this.x =`，编译器负责写回字段。
@@ -67,8 +68,14 @@
 // 只摘分派部分：permits 省略，四个嵌套 record 也省略
 public sealed interface LLMResult {
     boolean retryable();
-    default Optional<String> content() { return Optional.empty(); }
-    default boolean isSuccess() { return content().isPresent(); }
+
+    default Optional<String> content() {
+        return Optional.empty();
+    }
+
+    default boolean isSuccess() {
+        return content().isPresent();
+    }
 
     static int httpStatus(LLMResult r) {
         return switch (r) {
@@ -122,8 +129,8 @@ static String advice(LLMResult r) {
   别混着讲。
 - **文本块**（Java 15 正式）：开定界符后必须换行；自动去掉公共缩进（附带空白）；行尾 `\` 抑制换行；`\s` 保留行尾空格；
   `formatted` 做占位替换。写 prompt 时特别容易踩「缩进被吃掉」。
-- **var**（Java 10）：只能用于局部变量、for、try-with-resources；不能用于字段、方法参数、返回类型；是编译期推断，
-  **不是动态类型**。判断标准：变量名能不能替代类型名说清楚含义。
+- **var**（Java 10）：只能用于局部变量、for、try-with-resources；不能用于字段、方法参数、返回类型；是编译期推断， **不是动态类型**
+  。判断标准：变量名能不能替代类型名说清楚含义。
 
 文本块写 prompt 的落点：
 
@@ -156,12 +163,12 @@ static String retryPrompt(String question, LLMResult failed) {
 
 ## 3. 本仓库对照：四段练习落在哪
 
-| 练习                 | 落点                                                  | 关键写法                                                                                          | 验证                              |
-|----------------------|-------------------------------------------------------|---------------------------------------------------------------------------------------------------|-----------------------------------|
-| record + 紧凑构造器  | `Usage` / `Ok` / `RateLimited` / `TimedOut` / `Broken` | 各守一条不变量：text 非空白并 trim、`retryAfter ≥ 0`、`attempts ∈ [0,3]`、`status ∈ [400,599]`、token 非负 | 5 条非法构造被拒（§4.2）          |
-| sealed + 穷尽 switch | `LLMResult.httpStatus`、`LLMResult.advice`            | 四个实现，两处都无 `default`                                                                | 加第 5 态两处同时编译失败（§5）   |
-| 模式匹配             | `advice`                                              | 嵌套 record pattern + 4 个 `when` + `case Broken b` 类型模式                                      | 8 个样本覆盖守卫两档（§4.1）      |
-| 文本块               | `retryPrompt`                                         | `"""` + `%s` + `formatted` + `stripTrailing()`                                                    | 输出见 §4.1 末尾                  |
+| 练习                 | 落点                                                   | 关键写法                                                                                                   | 验证                            |
+|----------------------|--------------------------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------|
+| record + 紧凑构造器  | `Usage` / `Ok` / `RateLimited` / `TimedOut` / `Broken` | 各守一条不变量：text 非空白并 trim、`retryAfter ≥ 0`、`attempts ∈ [0,3]`、`status ∈ [400,599]`、token 非负 | 5 条非法构造被拒（§4.2）        |
+| sealed + 穷尽 switch | `LLMResult.httpStatus`、`LLMResult.advice`             | 四个实现，两处都无 `default`                                                                               | 加第 5 态两处同时编译失败（§5） |
+| 模式匹配             | `advice`                                               | 嵌套 record pattern + 4 个 `when` + `case Broken b` 类型模式                                               | 8 个样本覆盖守卫两档（§4.1）    |
+| 文本块               | `retryPrompt`                                          | `"""` + `%s` + `formatted` + `stripTrailing()`                                                             | 输出见 §4.1 末尾                |
 
 跑法（项目根目录）：
 
@@ -241,7 +248,8 @@ LlmResultExercises.java:76: 错误: switch 表达式不包含所有可能的输�
 
 1. **JPA 实体**：需要无参构造 + 可变的非 final 字段，record 天生给不了；Hibernate 还要可变代理。
 
-2. **数值语义会丢**：之前 JSON 解析器里的 `Json.number()` 特意分了三档——带 `.`/`e` 走 `Double`，整数先试 `Integer`，超范围才 `Long`：
+2. **数值语义会丢**：之前 JSON 解析器里的 `Json.number()` 特意分了三档——带 `.`/`e` 走 `Double`，整数先试 `Integer`，超范围才
+   `Long`：
 
    ```java
    if (text.contains(".") || text.contains("e") || text.contains("E")) return Double.parseDouble(text);

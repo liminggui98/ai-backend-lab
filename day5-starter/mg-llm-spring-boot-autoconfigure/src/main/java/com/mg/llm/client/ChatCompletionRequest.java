@@ -33,14 +33,10 @@ public class ChatCompletionRequest {
     public String getCompletionChatReqText(String model, Float temperature) {
         JSONArray messages = new JSONArray();
         if (systemMessage != null) {
-            messages.add(new JSONObject()
-                    .fluentPut("role", systemMessage.role())
-                    .fluentPut("content", systemMessage.content()));
+            messages.add(new JSONObject().fluentPut("role", systemMessage.role()).fluentPut("content", systemMessage.content()));
         }
         if (userMessage != null) {
-            messages.add(new JSONObject()
-                    .fluentPut("role", userMessage.role())
-                    .fluentPut("content", userMessage.content()));
+            messages.add(new JSONObject().fluentPut("role", userMessage.role()).fluentPut("content", userMessage.content()));
         }
 
         JSONObject payload = new JSONObject();
