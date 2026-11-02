@@ -5,11 +5,11 @@ public sealed interface Message permits SystemMessage, UserMessage {
 
     String content();
 
-    public static UserMessage userPrompt(String userContent) {
+    static UserMessage user(String userContent) {
         return new UserMessage(userContent);
     }
 
-    public static SystemMessage systemPrompt(String content) {
+    static SystemMessage system(String content) {
         return new SystemMessage(content);
     }
 }

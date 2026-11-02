@@ -2,7 +2,9 @@ package com.mg.llm.client;
 
 
 import com.mg.llm.prompt.Message;
+import lombok.Data;
 
+@Data
 public class ChatCompletionRequest {
     private Message systemMessage;
 
@@ -19,27 +21,40 @@ public class ChatCompletionRequest {
         }
     }
 
-    public Message getSystemMessage() {
-        return systemMessage;
+    public String getCompletionChatReqText(String model) {
+        return """
+                {
+                    "model": "%s",
+                    "message": %s,
+                    "stream": "%s",
+                    "top_p": 0.9,
+                    "temperature": 1
+                }
+                """.formatted(model, getMessageStr(), stream);
     }
 
-    public void setSystemMessage(Message systemMessage) {
-        this.systemMessage = systemMessage;
-    }
+    private String getMessageStr() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
 
-    public Message getUserMessage() {
-        return userMessage;
-    }
-
-    public void setUserMessage(Message userMessage) {
-        this.userMessage = userMessage;
-    }
-
-    public Boolean getStream() {
-        return stream;
-    }
-
-    public void setStream(Boolean stream) {
-        this.stream = stream;
+        if (systemMessage != null) {
+            sb.append("""
+                    {
+                        "role": "%s",
+                        "content": "%s" 
+                    }
+                    """.formatted(systemMessage.role(), systemMessage.content()));
+        }
+        if (userMessage != null) {
+            sb.append("""
+                    ,
+                    {
+                        "role": "%s",
+                        "content": "%s"
+                    }
+                    """.formatted(userMessage.role(), userMessage.content()));
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

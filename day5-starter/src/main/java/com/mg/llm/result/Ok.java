@@ -1,5 +1,12 @@
 package com.mg.llm.result;
 
+/**
+ * 大模型 API 一次调用结果
+ *
+ * @param prompt 提示
+ * @param body   回答
+ * @param usage  使用情况
+ */
 public record Ok(String prompt, String body, Usage usage) implements LLMResult {
     public Ok {
         if (prompt == null || prompt.isBlank()) {
