@@ -10,6 +10,7 @@
     <packaging>jar</packaging>
 
     <name>day5-starter</name>
+    <description>day5 测试工程：消费 mg-llm-spring-boot-starter，保留冒烟测试逻辑</description>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
@@ -21,6 +22,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.mg</groupId>
+            <artifactId>mg-llm-spring-boot-starter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
             <version>2.0.65</version>
@@ -29,17 +36,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>
