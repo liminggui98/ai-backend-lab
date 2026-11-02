@@ -1,5 +1,6 @@
 package com.mg.llm.client;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.mg.llm.result.*;
 import lombok.Data;
@@ -12,39 +13,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * OpenAI 兼容协议客服端
+ * OpenAI 兼容协议客户端。
+ *
+ * <p>统一返回 {@link LLMResult}（成功 {@link Ok} / 限流 {@link RateLimited} / 超时 {@link TimedOut} /
+ * 服务方错误 {@link Broken} / 客户端异常 {@link ClientException}），调用方据此判断是否可重试。
  */
 @Data
 public class LLMOpenAIClient {
-    /**
-     * 匹配响应中 content 字段的 JSON 字符串值，兼容内部转义字符。
-     */
-    static final Pattern CONTENT_PATTERN = Pattern.compile("\"content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
-
-    /**
-     * 匹配响应中 reasoning_content 字段的 JSON 字符串值，兼容内部转义字符。
-     */
-    static final Pattern REASONING_CONTENT_PATTERN = Pattern.compile("\"reasoning_content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
-
-    /**
-     * 匹配 usage 中 prompt_tokens 数值的正则。
-     */
-    private static final Pattern PROMPT_TOKENS_PATTERN = Pattern.compile("\"prompt_tokens\"\\s*:\\s*(\\d+)");
-
-    /**
-     * 匹配 usage 中 completion_tokens 数值的正则。
-     */
-    private static final Pattern COMPLETION_TOKENS_PATTERN = Pattern.compile("\"completion_tokens\"\\s*:\\s*(\\d+)");
-
-    /**
-     * 匹配 usage 中 total_tokens 数值的正则。
-     */
-    private static final Pattern TOTAL_TOKENS_PATTERN = Pattern.compile("\"total_tokens\"\\s*:\\s*(\\d+)");
 
     private final HttpClient client;
 
@@ -70,11 +48,12 @@ public class LLMOpenAIClient {
     public LLMResult chatCompletion(ChatCompletionRequest chatCompletionRequest) {
         URI uri;
         try {
-            uri = new URI("%s/chat/completion".formatted(baseUrl));
+            uri = new URI("%s/chat/completions".formatted(baseUrl));
         } catch (URISyntaxException e) {
-            return new ClientException("初始化 uri %s/chat/completion 失败".formatted(baseUrl), e);
+            return new ClientException("初始化 uri %s/chat/completions 失败".formatted(baseUrl), e);
         }
 
+        String prompt = promptOf(chatCompletionRequest);
         String requestStr = chatCompletionRequest.getCompletionChatReqText(model);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -85,139 +64,151 @@ public class LLMOpenAIClient {
                 .POST(HttpRequest.BodyPublishers.ofString(requestStr))
                 .timeout(Duration.ofSeconds(10))
                 .build();
+
         if (chatCompletionRequest.getStream()) {
-            return streamRequest(requestStr, request);
+            return streamRequest(prompt, request);
         } else {
-            return request(requestStr, request);
+            return request(prompt, request);
         }
     }
 
-
-    private LLMResult streamRequest(String prompt, HttpRequest request) {
-        long start = System.nanoTime();
-        HttpResponse<Stream<String>> response;
-        try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofLines());
-            if (response.statusCode() != 200) {
-                return new Broken("", "", prompt);
-            }
-
-            Usage usage = null;
-            StringBuilder content = new StringBuilder();
-
-            Iterator<String> respLinesIter = response.body().iterator();
-            while (respLinesIter.hasNext()) {
-                String line = respLinesIter.next();
-                if (!line.startsWith("data:")) {
-                    continue;
-                }
-
-                String data = line.substring(5).trim();
-                if (data.equals("[DONE]")) {
-                    break;
-                }
-
-
-                JSONObject dataObj = JSONObject.parseObject(data);
-
-                usage = extractUsage(data);
-            }
-
-            return new Ok(prompt, "{}", new Usage(0, 0));
-        } catch (IOException e) {
-            return new ClientException("请求IO异常", e);
-        } catch (InterruptedException e) {
-            return new ClientException("请求中断", e);
+    /**
+     * 取用户实际提问内容，作为 {@link Ok#prompt()} 存进结果；用户消息缺失时回退到系统消息。
+     */
+    private static String promptOf(ChatCompletionRequest req) {
+        if (req.getUserMessage() != null) {
+            return req.getUserMessage().content();
         }
+        if (req.getSystemMessage() != null) {
+            return req.getSystemMessage().content();
+        }
+        return "";
     }
 
+    /**
+     * 非流式：整体返回一个 JSON，直接从 body 里解析 content 与 usage。
+     */
     private LLMResult request(String prompt, HttpRequest request) {
         HttpResponse<String> response;
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
-                return new Ok(prompt, "{}", new Usage(0, 0));
-            }
-
-            Usage usage = new Usage(0, 0);
-            return new Ok(prompt, "{}", usage);
         } catch (IOException e) {
             return new ClientException("请求IO异常", e);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return new ClientException("请求中断", e);
         }
+
+        if (response.statusCode() != 200) {
+            return new Broken(String.valueOf(response.statusCode()), "http_error", response.body());
+        }
+
+        JSONObject body = JSONObject.parseObject(response.body());
+        String content = extractContent(body);
+        if (content.isBlank()) {
+            return new Broken("empty_content", "response", response.body());
+        }
+        return new Ok(prompt, content, extractUsage(body));
     }
 
     /**
-     * 若该行 SSE 数据包含完整的 usage（含 total_tokens），返回新 usage，否则保留原值。
-     *
-     * @param data 去掉 data: 前缀的 SSE 数据行
-     * @return 更新后的 usage JSON
+     * 流式：逐行读取 SSE，累加 delta.content，最后一个带 usage 的 chunk 记录 token 用量。
      */
-    private static Usage extractUsage(String data) {
-        long promptTokens = 0;
-        long completionTokens = 0;
+    private LLMResult streamRequest(String prompt, HttpRequest request) {
+        HttpResponse<Stream<String>> response;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofLines());
+        } catch (IOException e) {
+            return new ClientException("请求IO异常", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new ClientException("请求中断", e);
+        }
 
-        String perUsage = jsonObjectAfter(data, "usage");
-        if (perUsage.contains("total_tokens")) {
-            // 提取 prompt_tokens、completion_tokens
-            Matcher matcher = PROMPT_TOKENS_PATTERN.matcher(perUsage);
-            if (matcher.find()) {
+        if (response.statusCode() != 200) {
+            return new Broken(String.valueOf(response.statusCode()), "http_error", prompt);
+        }
+
+        StringBuilder content = new StringBuilder();
+        Usage usage = new Usage(0, 0);
+
+        Iterator<String> lines = response.body().iterator();
+        while (lines.hasNext()) {
+            String line = lines.next();
+            if (!line.startsWith("data:")) {
+                continue;
+            }
+
+            String data = line.substring(5).trim();
+            if (data.equals("[DONE]")) {
+                break;
+            }
+            if (data.isEmpty()) {
+                continue;
+            }
+
+            JSONObject chunk = JSONObject.parseObject(data);
+            content.append(extractDeltaContent(chunk));
+            if (chunk.containsKey("usage")) {
+                usage = extractUsage(chunk);
             }
         }
-        return new Usage(promptTokens, completionTokens);
+
+        String body = content.toString();
+        if (body.isBlank()) {
+            return new Broken("empty_content", "stream", prompt);
+        }
+        return new Ok(prompt, body, usage);
     }
 
     /**
-     * 判断一行 SSE 数据是否包含 content 或 reasoning_content 内容字段。
-     *
-     * @param data 去掉 data: 前缀的 SSE 数据行
-     * @return true 表示包含内容字段，可视为首 token 到达
+     * 非流式响应：取 choices[0].message.content。
      */
-    private static boolean hasContent(String data) {
-        return CONTENT_PATTERN.matcher(data).find()
-                || REASONING_CONTENT_PATTERN.matcher(data).find();
+    private static String extractContent(JSONObject body) {
+        JSONArray choices = body.getJSONArray("choices");
+        if (choices == null || choices.isEmpty()) {
+            return "";
+        }
+        JSONObject first = choices.getJSONObject(0);
+        if (first == null) {
+            return "";
+        }
+        JSONObject message = first.getJSONObject("message");
+        if (message == null) {
+            return "";
+        }
+        String content = message.getString("content");
+        return content == null ? "" : content;
     }
 
     /**
-     * 从 JSON 文本中提取 key 之后紧跟的 JSON 对象，匹配花括号配对并忽略字符串内的花括号。
-     *
-     * @param body JSON 文本
-     * @param key  要提取对象的字段名
-     * @return key 对应的 JSON 对象文本；未找到或括号不匹配时返回提示文案
+     * 流式 chunk：取 choices[0].delta.content（本次增量）。
      */
-    static String jsonObjectAfter(String body, String key) {
-        int i = body.indexOf("\"" + key + "\"");
-        if (i < 0) {
-            return "(未找到 " + key + ")";
+    private static String extractDeltaContent(JSONObject chunk) {
+        JSONArray choices = chunk.getJSONArray("choices");
+        if (choices == null || choices.isEmpty()) {
+            return "";
         }
+        JSONObject first = choices.getJSONObject(0);
+        if (first == null) {
+            return "";
+        }
+        JSONObject delta = first.getJSONObject("delta");
+        if (delta == null) {
+            return "";
+        }
+        String content = delta.getString("content");
+        return content == null ? "" : content;
+    }
 
-        int start = body.indexOf('{', i);
-        if (start < 0) {
-            return "(未找到 " + key + " 的对象)";
+    /**
+     * 从 usage 对象提取 prompt_tokens / completion_tokens，缺失时按 0 处理。
+     */
+    private static Usage extractUsage(JSONObject body) {
+        JSONObject usage = body.getJSONObject("usage");
+        if (usage == null) {
+            return new Usage(0, 0);
         }
-
-        int depth = 0;
-        boolean inStr = false;
-        boolean esc = false;
-        for (int p = start; p < body.length(); p++) {
-            char c = body.charAt(p);
-            if (inStr) {
-                if (esc) {
-                    esc = false;
-                } else if (c == '\\') {
-                    esc = true;
-                } else if (c == '"') {
-                    inStr = false;
-                }
-            } else if (c == '"') {
-                inStr = true;
-            } else if (c == '{') {
-                depth++;
-            } else if (c == '}' && --depth == 0) {
-                return body.substring(start, p + 1);
-            }
-        }
-        return "(括号不匹配)";
+        return new Usage(usage.getLongValue("prompt_tokens"), usage.getLongValue("completion_tokens"));
     }
 }

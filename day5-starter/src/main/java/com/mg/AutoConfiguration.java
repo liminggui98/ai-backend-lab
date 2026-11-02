@@ -20,8 +20,8 @@ public class AutoConfiguration {
         ObjectProvider<LLMOpenAIClient> llmOpenAIClientProvider = context.getBeanProvider(LLMOpenAIClient.class);
         llmOpenAIClientProvider.stream()
                 .forEach(llmOpenAIClient -> {
-                    Message systemMessage = Message.system("");
-                    Message userMessage = Message.user("");
+                    Message systemMessage = Message.system("你是一个简洁的助手");
+                    Message userMessage = Message.user("用一句话介绍你自己");
 
                     ChatCompletionRequest request = new ChatCompletionRequest(systemMessage, userMessage, false);
                     LLMResult llmResult = llmOpenAIClient.chatCompletion(request);

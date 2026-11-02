@@ -1,6 +1,8 @@
 package com.mg.llm.client;
 
 
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.mg.llm.prompt.Message;
 import lombok.Data;
 
@@ -21,40 +23,32 @@ public class ChatCompletionRequest {
         }
     }
 
+    /**
+     * 用 fastjson2 序列化请求体：字段名（messages 复数）、布尔（stream）、字符串转义都交给序列化器处理，
+     * 避免手拼 JSON 时 content 里出现引号 / 换行导致请求体非法。
+     *
+     * @param model 模型名
+     * @return OpenAI 兼容协议的 chat/completions 请求体
+     */
     public String getCompletionChatReqText(String model) {
-        return """
-                {
-                    "model": "%s",
-                    "messages": %s,
-                    "stream": %b,
-                    "top_p": 0.9,
-                    "temperature": 1
-                }
-                """.formatted(model, getMessageStr(), stream);
-    }
-
-    private String getMessageStr() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
+        JSONArray messages = new JSONArray();
         if (systemMessage != null) {
-            sb.append("""
-                    {
-                        "role": "%s",
-                        "content": "%s"
-                    }
-                    """.formatted(systemMessage.role(), systemMessage.content()));
+            messages.add(new JSONObject()
+                    .fluentPut("role", systemMessage.role())
+                    .fluentPut("content", systemMessage.content()));
         }
         if (userMessage != null) {
-            sb.append("""
-                    ,
-                    {
-                        "role": "%s",
-                        "content": "%s"
-                    }
-                    """.formatted(userMessage.role(), userMessage.content()));
+            messages.add(new JSONObject()
+                    .fluentPut("role", userMessage.role())
+                    .fluentPut("content", userMessage.content()));
         }
-        sb.append("]");
-        return sb.toString();
+
+        JSONObject payload = new JSONObject();
+        payload.put("model", model);
+        payload.put("messages", messages);
+        payload.put("stream", stream);
+        payload.put("top_p", 0.9);
+        payload.put("temperature", 1);
+        return payload.toJSONString();
     }
 }
