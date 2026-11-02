@@ -21,10 +21,6 @@ import org.springframework.context.ApplicationContext;
 @SpringBootApplication
 public class SampleApplication {
     public static void main(String[] args) {
-        System.out.println("cwd=" + System.getProperty("user.dir"));
-        System.out.println(".env exists=" + java.nio.file.Files.exists(java.nio.file.Path.of(".env")));
-
-
         ApplicationContext context = SpringApplication.run(SampleApplication.class, args);
 
         ObjectProvider<LLMOpenAIClient> llmOpenAIClientProvider = context.getBeanProvider(LLMOpenAIClient.class);
